@@ -9,8 +9,8 @@ export const Wrapper = styled("div", ({ $theme }) => ({
   backgroundColor: $theme.colors.borderF1,
 
   "@media only screen and (max-width: 520px)": {
-    backgroundColor: "#fff"
-  }
+    backgroundColor: "#fff",
+  },
 }));
 
 export const FormWrapper = styled("div", () => ({
@@ -23,19 +23,25 @@ export const FormWrapper = styled("div", () => ({
 
   "@media only screen and (max-width: 500px)": {
     width: "100%",
-    padding: "30px"
-  }
+    padding: "30px",
+  },
 }));
 
 export const LogoWrapper = styled("div", () => ({
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  marginBottom: "20px"
+  marginBottom: "20px",
 }));
 
 export const LogoImage = styled("img", () => ({
   display: "block",
   backfaceVisibility: "hidden",
-  maxWidth: "150px"
+  maxWidth: "150px",
+}));
+
+export const QRWrapper = styled("div", () => ({
+  display: "flex",
+  justifyContent: "center",
+  marginTop: "20px",
 }));
