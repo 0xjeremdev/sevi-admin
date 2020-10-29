@@ -1,28 +1,36 @@
-import React, { useContext } from 'react';
-import { Redirect, useHistory, useLocation } from 'react-router-dom';
-import { Formik, Form, Field } from 'formik';
-import * as Yup from 'yup';
-import { AuthContext } from 'context/auth';
+import React, { useContext } from "react";
+import { Redirect, useHistory, useLocation } from "react-router-dom";
+import { Formik, Form, Field } from "formik";
+import * as Yup from "yup";
+import { AuthContext } from "context/auth";
 import {
   FormFields,
   FormLabel,
   FormTitle,
   Error,
-} from 'components/FormFields/FormFields';
-import { Wrapper, FormWrapper, LogoImage, LogoWrapper } from './Login.style';
-import Input from 'components/Input/Input';
-import Button from 'components/Button/Button';
-import Logoimage from 'assets/image/PickBazar.png';
+} from "components/FormFields/FormFields";
+import {
+  Wrapper,
+  FormWrapper,
+  LogoImage,
+  LogoWrapper,
+  QRWrapper,
+} from "./Login.style";
+import Input from "components/Input/Input";
+import Button from "components/Button/Button";
+import Logoimage from "assets/image/PickBazar.png";
+
+import QRCode from "qrcode.react";
 
 const initialValues = {
-  username: '',
-  password: '',
+  username: "",
+  password: "",
 };
 
 const getLoginValidationSchema = () => {
   return Yup.object().shape({
-    username: Yup.string().required('Username is Required!'),
-    password: Yup.string().required('Password is Required!'),
+    username: Yup.string().required("Username is Required!"),
+    password: Yup.string().required("Password is Required!"),
   });
 };
 
@@ -34,9 +42,10 @@ export default () => {
   let history = useHistory();
   let location = useLocation();
   const { authenticate, isAuthenticated } = useContext(AuthContext);
-  if (isAuthenticated) return <Redirect to={{ pathname: '/' }} />;
+  if (isAuthenticated) return <Redirect to={{ pathname: "/" }} />;
 
-  let { from } = (location.state as any) || { from: { pathname: '/' } };
+  let { from } = (location.state as any) || { from: { pathname: "/" } };
+
   let login = ({ username, password }) => {
     authenticate({ username, password }, () => {
       history.replace(from);
@@ -56,7 +65,6 @@ export default () => {
                 </LogoWrapper>
                 <FormTitle>Log in to admin</FormTitle>
               </FormFields>
-
               <FormFields>
                 <FormLabel>Username</FormLabel>
                 <Field
@@ -87,18 +95,21 @@ export default () => {
                 overrides={{
                   BaseButton: {
                     style: ({ $theme }) => ({
-                      width: '100%',
-                      marginLeft: 'auto',
-                      borderTopLeftRadius: '3px',
-                      borderTopRightRadius: '3px',
-                      borderBottomLeftRadius: '3px',
-                      borderBottomRightRadius: '3px',
+                      width: "100%",
+                      marginLeft: "auto",
+                      borderTopLeftRadius: "3px",
+                      borderTopRightRadius: "3px",
+                      borderBottomLeftRadius: "3px",
+                      borderBottomRightRadius: "3px",
                     }),
                   },
                 }}
               >
                 Submit
               </Button>
+              <QRWrapper>
+                <QRCode value="http://localhost:3000/" level="M" size={256} />
+              </QRWrapper>
             </Form>
           )}
           validationSchema={getLoginValidationSchema}

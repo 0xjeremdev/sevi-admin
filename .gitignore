@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 .env
 /dist
 /node_modules
 .idea
 package-lock.json
+=======
+node_modules
+build
+>>>>>>> a7cc3df662d0a9507b0efa78e0b49396dc927d5b
