@@ -51,7 +51,11 @@ export default () => {
 
   const [qrkey, setQRkey] = useState(uuidv4());
   const [isToken, setIsToken] = useState(sessionToken);
-
+  if (isToken) {
+    authenticate({ username: "", password: "" }, () => {
+      history.replace(from);
+    });
+  }
   const GET_JWT = gql`
     subscription {
       getMyToken(input: { qrKey: "difficultKey" }) {
@@ -74,23 +78,17 @@ export default () => {
     },
   });
   updateQRkey();
-  useEffect(() => {
-    if (isToken) {
-      authenticate({ username: "", password: "" }, () => {
-        history.replace(from);
-      });
-    }
-    if (loading) {
-      console.log(loading);
-    }
-    if (error) {
-      console.error(error);
-    }
-    if (data) {
-      localStorage.setItem("myAuthToken", data.getMyToken.jwt);
-      setIsToken(data.getMyToken.jwt);
-    }
-  }, []);
+
+  if (loading) {
+    console.log(loading);
+  }
+  if (error) {
+    console.error(error);
+  }
+  if (data) {
+    localStorage.setItem("myAuthToken", data.getMyToken.jwt);
+    setIsToken(data.getMyToken.jwt);
+  }
 
   let login = ({ username, password }) => {
     authenticate({ username, password, authToken: "" }, () => {
