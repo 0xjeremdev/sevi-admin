@@ -28,7 +28,7 @@ const httpLink = new HttpLink({
 const wsLink = new WebSocketLink({
   uri: `ws://exodus.sevi.io/admin`,
   options: {
-    reconnect: true,
+    // reconnect: true,
     timeout: 30000,
   },
 });

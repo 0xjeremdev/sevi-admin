@@ -51,11 +51,7 @@ export default () => {
 
   const [qrkey, setQRkey] = useState(uuidv4());
   const [isToken, setIsToken] = useState(sessionToken);
-  if (isToken) {
-    authenticate({ username: "", password: "" }, () => {
-      history.replace(from);
-    });
-  }
+
   const GET_JWT = gql`
     subscription {
       getMyToken(input: { qrKey: "difficultKey" }) {
@@ -77,18 +73,25 @@ export default () => {
       },
     },
   });
-  updateQRkey();
 
-  if (loading) {
-    console.log(loading);
-  }
-  if (error) {
-    console.error(error);
-  }
-  if (data) {
-    localStorage.setItem("myAuthToken", data.getMyToken.jwt);
-    setIsToken(data.getMyToken.jwt);
-  }
+  useEffect(() => {
+    updateQRkey();
+    if (isToken) {
+      authenticate({ username: "", password: "" }, () => {
+        history.replace(from);
+      });
+    }
+    if (loading) {
+      console.log(loading);
+    }
+    if (error) {
+      console.error(error);
+    }
+    if (data) {
+      localStorage.setItem("myAuthToken", data.getMyToken.jwt);
+      setIsToken(data.getMyToken.jwt);
+    }
+  }, []);
 
   let login = ({ username, password }) => {
     authenticate({ username, password, authToken: "" }, () => {
@@ -151,15 +154,10 @@ export default () => {
               >
                 Submit
               </Button>
-              {isToken && (
-                <QRWrapper>
-                  <QRCode
-                    value={"http://localhost:3000/"}
-                    level="M"
-                    size={256}
-                  />
-                </QRWrapper>
-              )}
+
+              <QRWrapper>
+                <QRCode value={"http://localhost:3000/"} level="M" size={256} />
+              </QRWrapper>
             </Form>
           )}
           validationSchema={getLoginValidationSchema}
