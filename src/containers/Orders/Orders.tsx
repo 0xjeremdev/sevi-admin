@@ -89,7 +89,7 @@ export default function Orders() {
       }
     }
   `;
-  console.log(GET_ORDERS);
+
   // id
   // customer_id
   // creation_date
@@ -133,7 +133,6 @@ export default function Orders() {
 
   const { data, error, refetch } = useQuery(GET_ORDERS);
 
-  console.log("testOrderArray", data);
   if (error) {
     return <div>Error! {error.message}</div>;
   }

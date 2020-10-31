@@ -17,7 +17,7 @@ const isValidToken = () => {
 
 const AuthProvider = (props: any) => {
   const [isAuthenticated, makeAuthenticated] = React.useState(isValidToken());
-  function authenticate({ username, password }, cb) {
+  function authenticate({ username, password, authToken }, cb) {
     makeAuthenticated(true);
     // localStorage.setItem("pickbazar_token", `${username}.${password}`);
     localStorage.setItem("pickbazar_token", "2");
@@ -26,6 +26,7 @@ const AuthProvider = (props: any) => {
   function signout(cb) {
     makeAuthenticated(false);
     localStorage.removeItem("pickbazar_token");
+    localStorage.removeItem("myAuthToken");
     setTimeout(cb, 100);
   }
   return (
