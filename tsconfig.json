@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "noFallthroughCasesInSwitch": true,
     "target": "es5",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
@@ -14,7 +13,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react",
+    "jsx": "preserve",
     "baseUrl": "src"
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"]

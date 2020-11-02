@@ -17,6 +17,21 @@ import {
 } from "./Orders.style";
 import NoResult from "components/NoResult/NoResult";
 
+const GET_ORDERS = gql`
+  query getOrders($status: String, $limit: Int, $searchText: String) {
+    orders(status: $status, limit: $limit, searchText: $searchText) {
+      id
+      customer_id
+      creation_date
+      delivery_address
+      amount
+      payment_method
+      contact_number
+      status
+    }
+  }
+`;
+
 type CustomThemeT = { red400: string; textNormal: string; colors: any };
 const themedUseStyletron = createThemedUseStyletron<CustomThemeT>();
 
@@ -71,33 +86,6 @@ const limitSelectOptions = [
 ];
 
 export default function Orders() {
-  const sessionUserId: number = parseInt(
-    localStorage.getItem("pickbazar_token")
-  );
-  const GET_ORDERS = gql`
-     query getOrders($limit: Int, $searchText: String) {
-      orders(userId: ${sessionUserId}, limit: $limit, text: $searchText) {
-        id
-        amount
-        deliveryTime
-        subtotal
-        discount
-        deliveryAddress
-        deliveryFee
-        status
-        userId
-      }
-    }
-  `;
-
-  // id
-  // customer_id
-  // creation_date
-  // delivery_address
-  // amount
-  // payment_method
-  // contact_number
-  // status
   const [checkedId, setCheckedId] = useState([]);
   const [checked, setChecked] = useState(false);
 
@@ -132,7 +120,6 @@ export default function Orders() {
   const [search, setSearch] = useState([]);
 
   const { data, error, refetch } = useQuery(GET_ORDERS);
-
   if (error) {
     return <div>Error! {error.message}</div>;
   }
@@ -264,23 +251,23 @@ export default function Orders() {
                 </StyledHeadCell>
                 <StyledHeadCell>ID</StyledHeadCell>
                 <StyledHeadCell>Customer ID</StyledHeadCell>
-                <StyledHeadCell>Delivery Time</StyledHeadCell>
+                <StyledHeadCell>Time</StyledHeadCell>
                 <StyledHeadCell>Delivery Address</StyledHeadCell>
                 <StyledHeadCell>Amount</StyledHeadCell>
-                <StyledHeadCell>Sub Total</StyledHeadCell>
-                <StyledHeadCell>Delivery Fee</StyledHeadCell>
+                <StyledHeadCell>Payment Method</StyledHeadCell>
+                <StyledHeadCell>Contact</StyledHeadCell>
                 <StyledHeadCell>Status</StyledHeadCell>
 
                 {data ? (
                   data.orders.length ? (
                     data.orders
-                      .map((item) => item)
+                      .map((item) => Object.values(item))
                       .map((row, index) => (
                         <React.Fragment key={index}>
                           <StyledCell>
                             <Checkbox
-                              name={row.id}
-                              checked={checkedId.includes(row.id)}
+                              name={row[1]}
+                              checked={checkedId.includes(row[1])}
                               onChange={handleCheckbox}
                               overrides={{
                                 Checkmark: {
@@ -298,39 +285,30 @@ export default function Orders() {
                               }}
                             />
                           </StyledCell>
-                          <StyledCell>{index + 1}</StyledCell>
-                          <StyledCell>{row.userId}</StyledCell>
+                          <StyledCell>{row[1]}</StyledCell>
+                          <StyledCell>{row[2]}</StyledCell>
                           <StyledCell>
-                            {dayjs(row.deliveryTime).format("DD MMM YYYY")}
+                            {dayjs(row[3]).format("DD MMM YYYY")}
                           </StyledCell>
-                          <StyledCell>{row.deliveryAddress}</StyledCell>
-                          <StyledCell>${row.amount}</StyledCell>
-                          <StyledCell>{row.subtotal}</StyledCell>
-                          <StyledCell>{row.deliveryFee}</StyledCell>
-
+                          <StyledCell>{row[4]}</StyledCell>
+                          <StyledCell>${row[5]}</StyledCell>
+                          <StyledCell>{row[6]}</StyledCell>
+                          <StyledCell>{row[7]}</StyledCell>
                           <StyledCell style={{ justifyContent: "center" }}>
                             <Status
                               className={
-                                row.status === 1
+                                row[8].toLowerCase() === "delivered"
                                   ? sent
-                                  : row.status === 2
+                                  : row[8].toLowerCase() === "pending"
                                   ? paid
-                                  : row.status === 3
+                                  : row[8].toLowerCase() === "processing"
                                   ? processing
-                                  : row.status === 4
+                                  : row[8].toLowerCase() === "failed"
                                   ? failed
                                   : ""
                               }
                             >
-                              {row.status === 1
-                                ? "delivered"
-                                : row.status === 2
-                                ? "pending"
-                                : row.status === 3
-                                ? "processing"
-                                : row.status === 4
-                                ? "failed"
-                                : ""}
+                              {row[8]}
                             </Status>
                           </StyledCell>
                         </React.Fragment>

@@ -54,14 +54,14 @@ export default () => {
 
   const GET_JWT = gql`
     subscription {
-      getMyToken(input: { qrKey: ${qrkey} }) {
+      getMyToken(input: { qrKey: ${JSON.stringify(qrkey)} }) {
         jwt
       }
     }
   `;
   const SET_QRKey = gql`
     mutation {
-      provideQRkey(input: { qrKey: ${qrkey} })
+      provideQRkey(input: { qrKey: ${JSON.stringify(qrkey)} })
     }
   `;
   const { data, loading, error } = useSubscription(GET_JWT);
@@ -74,7 +74,6 @@ export default () => {
       },
     },
   });
-  const [isSubscribed, setSubscribed] = useState(true);
 
   updateQRkey();
   useEffect(() => {
@@ -83,7 +82,7 @@ export default () => {
         history.replace(from);
       });
     }
-    console.log(isSubscribed);
+
     if (data && !localStorage.getItem("myAuthToken")) {
       localStorage.setItem("myAuthToken", data.getMyToken.jwt);
     }
