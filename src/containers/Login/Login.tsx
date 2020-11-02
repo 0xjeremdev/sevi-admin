@@ -54,17 +54,18 @@ export default () => {
 
   const GET_JWT = gql`
     subscription {
-      getMyToken(input: { qrKey: "difficultKey" }) {
+      getMyToken(input: { qrKey: ${qrkey} }) {
         jwt
       }
     }
   `;
   const SET_QRKey = gql`
     mutation {
-      provideQRkey(input: { qrKey: "difficultKey" })
+      provideQRkey(input: { qrKey: ${qrkey} })
     }
   `;
   const { data, loading, error } = useSubscription(GET_JWT);
+
   const [updateQRkey] = useMutation(SET_QRKey, {
     context: {
       headers: {
@@ -73,25 +74,20 @@ export default () => {
       },
     },
   });
+  const [isSubscribed, setSubscribed] = useState(true);
 
+  updateQRkey();
   useEffect(() => {
-    updateQRkey();
     if (isToken) {
       authenticate({ username: "", password: "" }, () => {
         history.replace(from);
       });
     }
-    if (loading) {
-      console.log(loading);
-    }
-    if (error) {
-      console.error(error);
-    }
-    if (data) {
+    console.log(isSubscribed);
+    if (data && !localStorage.getItem("myAuthToken")) {
       localStorage.setItem("myAuthToken", data.getMyToken.jwt);
-      setIsToken(data.getMyToken.jwt);
     }
-  }, []);
+  }, [data]);
 
   let login = ({ username, password }) => {
     authenticate({ username, password, authToken: "" }, () => {
@@ -156,7 +152,11 @@ export default () => {
               </Button>
 
               <QRWrapper>
-                <QRCode value={"http://localhost:3000/"} level="M" size={256} />
+                <QRCode
+                  value={"http://localhost:3000/login"}
+                  level="M"
+                  size={256}
+                />
               </QRWrapper>
             </Form>
           )}

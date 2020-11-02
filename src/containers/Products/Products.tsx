@@ -60,32 +60,58 @@ export const LoaderItem = styled("div", () => ({
   marginBottom: "30px",
 }));
 
+// const GET_PRODUCTS = gql`
+//   query getProducts(
+//     $type: String
+//     $sortByPrice: String
+//     $searchText: String
+//     $offset: Int
+//   ) {
+//     products(
+//       type: $type
+//       sortByPrice: $sortByPrice
+//       searchText: $searchText
+//       offset: $offset
+//     ) {
+//       items {
+//         id
+//         name
+//         description
+//         image
+//         type
+//         price
+//         unit
+//         salePrice
+//         discountInPercent
+//       }
+//       totalCount
+//       hasMore
+//     }
+//   }
+// `;
 const GET_PRODUCTS = gql`
-  query getProducts(
-    $type: String
-    $sortByPrice: String
-    $searchText: String
-    $offset: Int
-  ) {
-    products(
-      type: $type
-      sortByPrice: $sortByPrice
-      searchText: $searchText
-      offset: $offset
-    ) {
-      items {
-        id
-        name
-        description
-        image
-        type
-        price
-        unit
-        salePrice
-        discountInPercent
+  query($account: String!) {
+    findAllProduct(account: $account) {
+      description
+      price
+      name
+      vendorID
+      _id
+      vendorName
+      vendorType
+      location {
+        lat
+        lon
       }
-      totalCount
-      hasMore
+      gallery {
+        url
+      }
+      exchange {
+        barter
+        sending
+        digital
+        pickup
+      }
     }
   }
 `;
