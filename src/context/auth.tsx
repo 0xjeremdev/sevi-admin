@@ -21,6 +21,7 @@ const AuthProvider = (props: any) => {
     makeAuthenticated(true);
     // localStorage.setItem("pickbazar_token", `${username}.${password}`);
     localStorage.setItem("pickbazar_token", "2");
+    localStorage.setItem("myAuthToken", authToken);
     setTimeout(cb, 100); // fake async
   }
   function signout(cb) {

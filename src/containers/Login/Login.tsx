@@ -21,8 +21,9 @@ import Button from "components/Button/Button";
 import Logoimage from "assets/image/PickBazar.png";
 
 import QRCode from "qrcode.react";
-import { useMutation, useSubscription, gql } from "@apollo/client";
+import { useSubscription, gql } from "@apollo/client";
 import { v4 as uuidv4 } from "uuid";
+import { JsxEmit } from "typescript";
 
 const initialValues = {
   username: "",
@@ -54,28 +55,20 @@ export default () => {
 
   const GET_JWT = gql`
     subscription {
-      getMyToken(input: { qrKey: ${JSON.stringify(qrkey)} }) {
+      getMyToken(input: { qrKey: "difficultKey" }) {
         jwt
       }
     }
   `;
-  const SET_QRKey = gql`
-    mutation {
-      provideQRkey(input: { qrKey: ${JSON.stringify(qrkey)} })
-    }
-  `;
+  //   const GET_JWT = gql`
+  //   subscription {
+  //     getMyToken(input: { qrKey: ${JSON.stringify(qrkey)} }) {
+  //       jwt
+  //     }
+  //   }
+  // `;
   const { data, loading, error } = useSubscription(GET_JWT);
 
-  const [updateQRkey] = useMutation(SET_QRKey, {
-    context: {
-      headers: {
-        Authorization:
-          "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE2MDQwMDI3NDMsImV4cCI6MTYzNTUzOTE2MSwiYXVkIjoid3d3LmV4YW1wbGUuY29tIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSIsIkdpdmVuTmFtZSI6IkpvaG5ueSIsIlN1cm5hbWUiOiJSb2NrZXQiLCJFbWFpbCI6Impyb2NrZXRAZXhhbXBsZS5jb20iLCJSb2xlIjpbIk1hbmFnZXIiLCJQcm9qZWN0IEFkbWluaXN0cmF0b3IiXSwidXNlcklEIjoiNWQwYjU1NTFkMDdmZmIwMDE3YmVkZWU2In0.03JgIsQlyqbViX8Nsg6iG01gWqKdh5ITo8j-Z2_vTBY",
-      },
-    },
-  });
-
-  updateQRkey();
   useEffect(() => {
     if (isToken) {
       authenticate({ username: "", password: "" }, () => {
@@ -83,8 +76,13 @@ export default () => {
       });
     }
 
-    if (data && !localStorage.getItem("myAuthToken")) {
-      localStorage.setItem("myAuthToken", data.getMyToken.jwt);
+    if (data) {
+      authenticate(
+        { username: "", password: "", authToken: data.getMyToken.jwt },
+        () => {
+          history.replace(from);
+        }
+      );
     }
   }, [data]);
 
@@ -93,6 +91,7 @@ export default () => {
       history.replace(from);
     });
   };
+
   return (
     <Wrapper>
       <FormWrapper>
@@ -151,11 +150,7 @@ export default () => {
               </Button>
 
               <QRWrapper>
-                <QRCode
-                  value={"http://localhost:3000/login"}
-                  level="M"
-                  size={256}
-                />
+                <QRCode value={qrkey} level="M" size={256} />
               </QRWrapper>
             </Form>
           )}
