@@ -69,12 +69,11 @@ export default () => {
         jwt
       }
     }
-  }
   `;
 
   const { data, loading, error } = useSubscription(GET_JWT, {
     variables: {
-      qrKey: difficultKey,
+      qrkey: difficultKey,
     },
   });
 
