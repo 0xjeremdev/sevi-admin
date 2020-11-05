@@ -1,13 +1,17 @@
 import React, { useContext, useState, useEffect } from "react";
 import { Redirect, useHistory, useLocation } from "react-router-dom";
-import { Formik, Form, Field } from "formik";
+import {
+  Formik,
+  Form,
+  //  Field
+} from "formik";
 import * as Yup from "yup";
 import { AuthContext } from "context/auth";
 import {
   FormFields,
-  FormLabel,
+  // FormLabel,
   FormTitle,
-  Error,
+  // Error,
 } from "components/FormFields/FormFields";
 import {
   Wrapper,
@@ -17,13 +21,12 @@ import {
   QRWrapper,
 } from "./Login.style";
 import Input from "components/Input/Input";
-import Button from "components/Button/Button";
+// import Button from "components/Button/Button";
 import Logoimage from "assets/image/PickBazar.png";
 
 import QRCode from "qrcode.react";
 import { useSubscription, gql, useMutation } from "@apollo/client";
 import { v4 as uuidv4 } from "uuid";
-import { JsxEmit } from "typescript";
 
 const initialValues = {
   username: "",
@@ -37,9 +40,9 @@ const getLoginValidationSchema = () => {
   });
 };
 
-const MyInput = ({ field, form, ...props }) => {
-  return <Input {...field} {...props} />;
-};
+// const MyInput = ({ field, form, ...props }) => {
+//   return <Input {...field} {...props} />;
+// };
 
 export default () => {
   let history = useHistory();
@@ -48,10 +51,17 @@ export default () => {
   if (isAuthenticated) return <Redirect to={{ pathname: "/" }} />;
 
   let { from } = (location.state as any) || { from: { pathname: "/" } };
-  let sessionToken = localStorage.getItem("myAuthToken");
+  // let sessionToken = localStorage.getItem("myAuthToken");
 
-  const [qrkey, setQRkey] = useState(uuidv4());
-  const [isToken, setIsToken] = useState(sessionToken);
+  const [difficultKey, setDifficultKey] = useState(uuidv4());
+  // // const [isToken, setIsToken] = useState(sessionToken);
+
+  console.log("difficultKey:", difficultKey);
+
+  const QRcontent = {
+    key: difficultKey,
+    type: "weblogin",
+  };
 
   const GET_JWT = gql`
     subscription($qrkey: String!) {
@@ -59,21 +69,23 @@ export default () => {
         jwt
       }
     }
+  }
   `;
 
-  console.log(qrkey);
   const { data, loading, error } = useSubscription(GET_JWT, {
-    variables: { qrkey },
+    variables: {
+      qrKey: difficultKey,
+    },
   });
-  useEffect(() => {
-    if (isToken) {
-      authenticate({ username: "", password: "" }, () => {
-        history.replace(from);
-      });
-    }
 
+  if (error) {
+    console.log("error:", error);
+  }
+
+  useEffect(() => {
     if (data) {
-      console.log(data);
+      console.log("data:", data);
+
       authenticate(
         { username: "", password: "", authToken: data.getMyToken.jwt },
         () => {
@@ -101,9 +113,9 @@ export default () => {
                 <LogoWrapper>
                   <LogoImage src={Logoimage} alt="pickbazar-admin" />
                 </LogoWrapper>
-                <FormTitle>Log in to admin</FormTitle>
+                <FormTitle>Login to admin account</FormTitle>
               </FormFields>
-              <FormFields>
+              {/* <FormFields>
                 <FormLabel>Username</FormLabel>
                 <Field
                   type="email"
@@ -144,10 +156,14 @@ export default () => {
                 }}
               >
                 Submit
-              </Button>
+              </Button> */}
 
               <QRWrapper>
-                <QRCode value={qrkey} level="M" size={256} />
+                <QRCode
+                  value={JSON.stringify(QRcontent)}
+                  level="M"
+                  size={256}
+                />
               </QRWrapper>
             </Form>
           )}
