@@ -21,7 +21,7 @@ import Button from "components/Button/Button";
 import Logoimage from "assets/image/PickBazar.png";
 
 import QRCode from "qrcode.react";
-import { useSubscription, gql } from "@apollo/client";
+import { useSubscription, gql, useMutation } from "@apollo/client";
 import { v4 as uuidv4 } from "uuid";
 import { JsxEmit } from "typescript";
 
@@ -54,21 +54,17 @@ export default () => {
   const [isToken, setIsToken] = useState(sessionToken);
 
   const GET_JWT = gql`
-    subscription {
-      getMyToken(input: { qrKey: "difficultKey" }) {
+    subscription($qrkey: String!) {
+      getMyToken(input: { qrKey: $qrkey }) {
         jwt
       }
     }
   `;
-  //   const GET_JWT = gql`
-  //   subscription {
-  //     getMyToken(input: { qrKey: ${JSON.stringify(qrkey)} }) {
-  //       jwt
-  //     }
-  //   }
-  // `;
-  const { data, loading, error } = useSubscription(GET_JWT);
 
+  console.log(qrkey);
+  const { data, loading, error } = useSubscription(GET_JWT, {
+    variables: { qrkey },
+  });
   useEffect(() => {
     if (isToken) {
       authenticate({ username: "", password: "" }, () => {
@@ -77,6 +73,7 @@ export default () => {
     }
 
     if (data) {
+      console.log(data);
       authenticate(
         { username: "", password: "", authToken: data.getMyToken.jwt },
         () => {

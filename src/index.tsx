@@ -5,6 +5,7 @@ import { Client as Styletron } from "styletron-engine-atomic";
 import { Provider as StyletronProvider } from "styletron-react";
 import { BaseProvider } from "baseui";
 import { ApolloProvider, ApolloClient, InMemoryCache } from "@apollo/client";
+import { setContext } from "@apollo/client/link/context";
 import { theme } from "./theme";
 import Routes from "./routes";
 import * as serviceWorker from "./serviceWorker";
@@ -16,22 +17,36 @@ import "./theme/global.css";
 import { split, HttpLink } from "@apollo/client";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { WebSocketLink } from "@apollo/client/link/ws";
+import { SubscriptionClient } from "subscriptions-transport-ws";
 
 const httpLink = new HttpLink({
   uri: "http://exodus.sevi.io/admin",
   headers: {
     Authorization:
-      "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE2MDQwMDI3NDMsImV4cCI6MTYzNTUzOTE2MSwiYXVkIjoid3d3LmV4YW1wbGUuY29tIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSIsIkdpdmVuTmFtZSI6IkpvaG5ueSIsIlN1cm5hbWUiOiJSb2NrZXQiLCJFbWFpbCI6Impyb2NrZXRAZXhhbXBsZS5jb20iLCJSb2xlIjpbIk1hbmFnZXIiLCJQcm9qZWN0IEFkbWluaXN0cmF0b3IiXSwidXNlcklEIjoiNWQwYjU1NTFkMDdmZmIwMDE3YmVkZWU2In0.03JgIsQlyqbViX8Nsg6iG01gWqKdh5ITo8j-Z2_vTBY",
+      "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE2MDQwMDI3NDMsImV4cCI6MTYzNTUzODc0MywiYXVkIjoid3d3LmV4YW1wbGUuY29tIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSIsIkdpdmVuTmFtZSI6IkpvaG5ueSIsIlN1cm5hbWUiOiJSb2NrZXQiLCJFbWFpbCI6Impyb2NrZXRAZXhhbXBsZS5jb20iLCJSb2xlIjpbIk1hbmFnZXIiLCJQcm9qZWN0IEFkbWluaXN0cmF0b3IiXSwidXNlcklEIjoiNWQwYjU1NTFkMDdmZmIwMDE3YmVkZWU2In0.pCEFMACUMmv1FV-zPy_KOfVicjoqHCY0Fs0yyzzbaRo",
   },
 });
 
-const wsLink = new WebSocketLink({
-  uri: `ws://exodus.sevi.io/admin`,
-  options: {
-    reconnect: true,
-    timeout: 3000,
-  },
+const authLink = setContext(async (_, { headers }) => {
+  // get the authentication token from local storage if it exists
+  const token = await localStorage.getItem("myAuthToken");
+  console.log("auth-tokeh:", token);
+
+  // return the headers to the context so httpLink can read them
+  return {
+    headers: {
+      ...headers,
+      Authorization: token ? token : "",
+    },
+  };
 });
+
+const subscription_client = new SubscriptionClient(
+  `ws://exodus.sevi.io/admin`,
+  { reconnect: true }
+);
+
+const wsLink = new WebSocketLink(subscription_client);
 const splitLink = split(
   ({ query }) => {
     const definition = getMainDefinition(query);
@@ -41,8 +56,10 @@ const splitLink = split(
     );
   },
   wsLink,
+  // authLink.concat(httpLink)
   httpLink
 );
+
 const client = new ApolloClient({
   // uri: process.env.REACT_APP_API_URL,
   link: splitLink,
