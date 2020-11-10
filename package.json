@@ -33,7 +33,12 @@
     "styletron-react": "^5.2.7",
     "subscriptions-transport-ws": "^0.9.18",
     "typescript": "^3.9.7",
-    "yup": "^0.29.3"
+    "yup": "^0.29.3",
+    "@types/node": "^14.0.27",
+    "@types/react": "^16.9.45",
+    "@types/react-dom": "^16.9.8",
+    "@types/react-router-dom": "^5.1.5",
+    "serve": "^11.3.2"
   },
   "scripts": {
     "dev": "react-scripts start",
@@ -50,12 +55,5 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ],
-  "devDependencies": {
-    "@types/node": "^14.0.27",
-    "@types/react": "^16.9.45",
-    "@types/react-dom": "^16.9.8",
-    "@types/react-router-dom": "^5.1.5",
-    "serve": "^11.3.2"
-  }
+  ]
 }
