@@ -19,6 +19,7 @@ import { getMainDefinition } from "@apollo/client/utilities";
 import { WebSocketLink } from "@apollo/client/link/ws";
 import { SubscriptionClient } from "subscriptions-transport-ws";
 
+
 const httpLink = new HttpLink({
   uri: process.env.REACT_APP_API_URL,
   headers: {
@@ -56,8 +57,8 @@ const splitLink = split(
     );
   },
   wsLink,
-  // authLink.concat(httpLink)
-  httpLink
+  authLink.concat(httpLink)
+  // httpLink
 );
 
 const client = new ApolloClient({
