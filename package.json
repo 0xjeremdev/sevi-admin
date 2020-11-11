@@ -2,7 +2,7 @@
   "name": "@pick-bazar/admin",
   "version": "3.1.1",
   "private": true,
-  "homepage": "https://master.d25rutyfxq5vnk.amplifyapp.com",
+  "homepage": "https://admin.sevi.io",
   "dependencies": {
     "@apollo/client": "^3.1.3",
     "apexcharts": "3.20.0",
