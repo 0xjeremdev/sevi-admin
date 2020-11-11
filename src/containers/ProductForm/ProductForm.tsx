@@ -122,7 +122,7 @@ const AddProduct: React.FC<Props> = (props) => {
   React.useEffect(() => {
     // register({ name: "type" });
     // register({ name: "categories" });
-    register({ name: "picture", required: true });
+    register({ name: "picture" });
     register({ name: "description", required: true });
   }, [register]);
 
@@ -168,20 +168,20 @@ const AddProduct: React.FC<Props> = (props) => {
     setType(value);
   };
   const handleUploader = async (files) => {
-    const file = files[0];
-    const presignedUrl = await getURL({
-      variables: { type: "PHOTO", account: currentWallet },
-    });
-    console.log(url);
-    const sendNow = await startUpload(
-      file,
-      presignedUrl.data.createPreSignedPost.url,
-      presignedUrl.data.createPreSignedPost.key
-    );
-    console.log(sendNow);
-    var url = new Url(presignedUrl.data.createPreSignedPost.url);
-    console.log(`${url.origin}${url.pathname}`);
-    setValue("image", files[0].path);
+    // const file = files[0];
+    // const presignedUrl = await getURL({
+    //   variables: { type: "PHOTO", account: currentWallet },
+    // });
+    // console.log(url);
+    // const sendNow = await startUpload(
+    //   file,
+    //   presignedUrl.data.createPreSignedPost.url,
+    //   presignedUrl.data.createPreSignedPost.key
+    // );
+    // console.log(sendNow);
+    // var url = new Url(presignedUrl.data.createPreSignedPost.url);
+    // console.log(`${url.origin}${url.pathname}`);
+    // setValue("image", files[0].path);
   };
   const onSubmit = (data) => {
     // const newProduct = {
@@ -198,6 +198,7 @@ const AddProduct: React.FC<Props> = (props) => {
     //   slug: data.name,
     //   creation_date: new Date(),
     // };
+    console.log(data);
     createProduct({
       variables: {
         account: currentWallet,
