@@ -14,6 +14,7 @@ import Select from "components/Select/Select";
 import { FormFields, FormLabel } from "components/FormFields/FormFields";
 import { useWalletState } from "context/WalletContext";
 import Url from "url-parse";
+import axios from "axios";
 
 import {
   Form,
@@ -97,13 +98,19 @@ const CREATE_PRODUCT = gql`
   }
 `;
 const CREATE_PRESIGNED_POST = gql`
-  mutation($account: String!, $type: UploadTypeEnum!) {
-    createPreSignedPost(account: $account, type: $type) {
-      data
-      key
-      url
-    }
+mutation(
+  $type: UploadTypeEnum!
+  $account: String
+) {
+  createPreSignedPost(
+    type: $type
+    account: $account
+  ) {
+    data
+    key
+    url
   }
+}
 `;
 type Props = any;
 
@@ -137,42 +144,69 @@ const AddProduct: React.FC<Props> = (props) => {
     setValue("categories", value);
     setTag(value);
   };
-  async function startUpload(file: File, presignedUrl: string, key: string) {
-    return new Promise(function (resolve, reject) {
-      const xhr = new XMLHttpRequest();
-      xhr.onreadystatechange = function () {
-        var status = xhr.status;
-        if (xhr.readyState === 4) {
-          if (xhr.status === 200) {
-            resolve("good");
-          } else {
-            reject(status);
-          }
-        }
-      };
-      var fd = new FormData();
-      fd.append("key", key);
-      fd.append("acl", "public-read");
-      fd.append("Content-Type", file.type);
-      fd.append("AWSAccessKeyId", key);
-      // fd.append('policy', 'YOUR POLICY')
-      fd.append("signature", key);
 
-      fd.append("file", file);
-      xhr.open("PUT", presignedUrl);
-      xhr.send(fd);
-    });
+
+  async function startUpload(file: File, presignedUrl: string, key: string) {
+    console.log('file:', file)
+    console.log('presignedUrl:', presignedUrl)
+
+   const send = await axios({
+      method: "PUT",
+      url: presignedUrl,
+      data: file,
+      headers: { "Content-Type": "multipart/form-data" }
+ })
+
+    // const formData = new FormData();
+
+    // formData.append("file", file);
+    // formData.append("Content-Type", file.type);
+
+    // const sendImage = await fetch(presignedUrl, {
+    //   method: 'put',
+    //   body: formData
+    // })
+    // console.log('sendImage:', sendImage)
+    // return new Promise(function (resolve, reject) {
+    //   const xhr = new XMLHttpRequest();
+    //   xhr.onreadystatechange = function () {
+    //     var status = xhr.status;
+    //     if (xhr.readyState === 4) {
+    //       if (xhr.status === 200) {
+    //         resolve("good");
+    //       } else {
+    //         reject(status);
+    //       }
+    //     }
+    //   };
+    //   var fd = new FormData();
+    //   fd.append("key", key);
+    //   fd.append("acl", "public-read");
+    //   fd.append("Content-Type", file.type);
+    //   fd.append("AWSAccessKeyId", key);
+    //   // fd.append('policy', 'YOUR POLICY')
+    //   fd.append("signature", key);
+
+    //   fd.append("file", file);
+    //   xhr.open("PUT", presignedUrl);
+    //   xhr.send(fd);
+    // });
   }
   const handleTypeChange = ({ value }) => {
     setValue("type", value);
     setType(value);
   };
+
+
   const handleUploader = async (files) => {
+    console.log('files all:', files)
     const file = files[0];
+    console.log('filenem:', file)
     const presignedUrl = await getURL({
-      variables: { type: "PHOTO", account: currentWallet },
+      variables: { type: "PRODUCT", account: currentWallet , imageName: file.name, imageType: file.type},
     });
-    console.log(url);
+    console.log('presignedUrl:', presignedUrl)
+    // console.log(url);
     const sendNow = await startUpload(
       file,
       presignedUrl.data.createPreSignedPost.url,
