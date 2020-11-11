@@ -33,6 +33,7 @@
     "styletron-react": "^5.2.7",
     "subscriptions-transport-ws": "^0.9.18",
     "typescript": "^3.9.7",
+    "url-parse": "^1.4.7",
     "yup": "^0.29.3"
   },
   "scripts": {

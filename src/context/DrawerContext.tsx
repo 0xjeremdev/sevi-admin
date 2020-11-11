@@ -1,4 +1,4 @@
-import { useCreateContext } from './create-context';
+import { useCreateContext } from "./create-context";
 
 const initialState = {
   isOpen: false,
@@ -9,14 +9,14 @@ type State = typeof initialState;
 type Action = any;
 function reducer(state: State, action: Action) {
   switch (action.type) {
-    case 'OPEN_DRAWER':
+    case "OPEN_DRAWER":
       return {
         ...state,
         isOpen: true,
         drawerComponent: action.drawerComponent,
         data: action.data,
       };
-    case 'CLOSE_DRAWER':
+    case "CLOSE_DRAWER":
       return {
         ...state,
         isOpen: false,

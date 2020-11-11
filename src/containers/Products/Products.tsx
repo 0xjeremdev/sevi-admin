@@ -83,16 +83,6 @@ const priceSelectOptions = [
   { value: "lowestToHighest", label: "Lowest To Highest" },
 ];
 
-const GetWallet = gql`
-  query {
-    walletOverview {
-      walletID
-      wallet {
-        account
-      }
-    }
-  }
-`;
 const SEARCH_PRODUCT = gql`
   query(
     $searchKey: String
@@ -114,10 +104,14 @@ const SEARCH_PRODUCT = gql`
       }
     ) {
       hits {
+        _id
+        picture
+        created
         name
         description
         vendorID
         vendorName
+        vendorType
         location {
           lat
           lon
@@ -134,10 +128,6 @@ const SEARCH_PRODUCT = gql`
 `;
 
 export default function Products() {
-  const wallet_data = useQuery(GetWallet);
-  let account = "";
-  if (wallet_data.data)
-    account = wallet_data.data.walletOverview[0].wallet.account;
   // const { data, error, refetch, fetchMore } = useQuery(GET_PRODUCTS, {
   //   variables: { account },
   // });
@@ -149,7 +139,7 @@ export default function Products() {
   // const [type, setType] = useState([]);
   // const [priceOrder, setPriceOrder] = useState([]);
 
-  console.log(error);
+  // console.log(error);
   if (error) {
     return <div>Error! {error.message}</div>;
   }
@@ -199,9 +189,9 @@ export default function Products() {
   function handleSearch(event) {
     const value = event.currentTarget.value;
     setSearch(value);
-    refetch({ searchKey: value });
+    // refetch({ searchKey: "" });
   }
-  console.log(data);
+  // console.log(data);
   return (
     <Grid fluid={true}>
       <Row>
@@ -265,10 +255,10 @@ export default function Products() {
                       <ProductCard
                         title={item.name}
                         weight={item.unit}
-                        image={item.image}
+                        image={item.picture}
                         currency={CURRENCY}
                         price={item.price}
-                        salePrice={item.salePrice}
+                        salePrice={item.price}
                         discountInPercent={item.discountInPercent}
                         data={item}
                       />
