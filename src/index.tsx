@@ -18,7 +18,7 @@ import { getMainDefinition } from "@apollo/client/utilities";
 import { WebSocketLink } from "@apollo/client/link/ws";
 
 const httpLink = new HttpLink({
-  uri: "http://exodus.sevi.io/admin",
+  uri: "https://exodus.sevi.io/admin",
   // headers: {
   //   Authorization:
   //     "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE2MDQwMDI3NDMsImV4cCI6MTYzNTUzOTE2MSwiYXVkIjoid3d3LmV4YW1wbGUuY29tIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSIsIkdpdmVuTmFtZSI6IkpvaG5ueSIsIlN1cm5hbWUiOiJSb2NrZXQiLCJFbWFpbCI6Impyb2NrZXRAZXhhbXBsZS5jb20iLCJSb2xlIjpbIk1hbmFnZXIiLCJQcm9qZWN0IEFkbWluaXN0cmF0b3IiXSwidXNlcklEIjoiNWQwYjU1NTFkMDdmZmIwMDE3YmVkZWU2In0.03JgIsQlyqbViX8Nsg6iG01gWqKdh5ITo8j-Z2_vTBY",
@@ -26,7 +26,7 @@ const httpLink = new HttpLink({
 });
 
 const wsLink = new WebSocketLink({
-  uri: `ws://exodus.sevi.io/admin`,
+  uri: `wss://exodus.sevi.io/admin`,
   options: {
     reconnect: true,
     timeout: 3000,
