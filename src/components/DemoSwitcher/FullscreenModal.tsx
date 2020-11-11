@@ -66,7 +66,7 @@ const SpringModal: React.FC<SpringModalProps> = ({
     height: '100%',
     maxHeight: '100%',
   };
-
+//
   return (
     <BaseModal isOpen={isOpen} onRequestClose={onRequestClose}>
       {transition.map(

@@ -29,6 +29,7 @@ const Coupons = lazy(() => import('containers/Coupons/Coupons'));
 const Login = lazy(() => import('containers/Login/Login'));
 const NotFound = lazy(() => import('containers/NotFound/NotFound'));
 
+//
 /**
  *
  *  A wrapper for <Route> that redirects to the login
