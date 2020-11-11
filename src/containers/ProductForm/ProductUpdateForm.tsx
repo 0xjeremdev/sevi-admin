@@ -12,6 +12,8 @@ import { Textarea } from "components/Textarea/Textarea";
 import { useWalletState } from "context/WalletContext";
 import Select from "components/Select/Select";
 import { FormFields, FormLabel } from "components/FormFields/FormFields";
+import axios from "axios";
+import Url from "url-parse";
 
 import {
   Form,
@@ -68,6 +70,15 @@ const UPDATE_PRODUCT = gql`
     }
   }
 `;
+const CREATE_PRESIGNED_POST = gql`
+  mutation($type: UploadTypeEnum!, $account: String) {
+    createPreSignedPost(type: $type, account: $account) {
+      data
+      key
+      url
+    }
+  }
+`;
 type Props = any;
 
 const AddProduct: React.FC<Props> = () => {
@@ -84,6 +95,7 @@ const AddProduct: React.FC<Props> = () => {
   const [type, setType] = useState([{ value: data.type }]);
   const [tag, setTag] = useState([]);
   const [description, setDescription] = useState(data.description);
+  const [getURL] = useMutation(CREATE_PRESIGNED_POST);
   React.useEffect(() => {
     // register({ name: "type" });
     // register({ name: "categories" });
@@ -107,13 +119,40 @@ const AddProduct: React.FC<Props> = () => {
     setValue("type", value);
     setType(value);
   };
-  const handleUploader = (files) => {
-    setValue("picture", files[0].path);
+  async function startUpload(file: File, presignedUrl: string, key: string) {
+    const send = await axios({
+      method: "PUT",
+      url: presignedUrl,
+      data: file,
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (send.status == 200) return "good";
+    else return "bad";
+  }
+  const handleUploader = async (files) => {
+    const file = files[0];
+    const presignedUrl = await getURL({
+      variables: {
+        type: "PRODUCT",
+        account: currentWallet,
+        imageName: file.name,
+        imageType: file.type,
+      },
+    });
+    const sendNow = await startUpload(
+      file,
+      presignedUrl.data.createPreSignedPost.url,
+      presignedUrl.data.createPreSignedPost.key
+    );
+    if (sendNow != "good") return;
+    var url = new Url(presignedUrl.data.createPreSignedPost.url);
+    setValue("picture", `${url.origin}${url.pathname}`);
   };
   const [updateProductHandler] = useMutation(UPDATE_PRODUCT);
-  const onSubmit = (updated_data) => {
+  const onSubmit = async (updated_data) => {
     const new_data = { ...data, ...updated_data };
-    updateProductHandler({
+    console.log(new_data);
+    const result = await updateProductHandler({
       variables: {
         account: currentWallet,
         id: new_data._id,
@@ -123,6 +162,7 @@ const AddProduct: React.FC<Props> = () => {
         price: Number(new_data.price),
       },
     });
+    console.log(result);
     closeDrawer();
   };
 

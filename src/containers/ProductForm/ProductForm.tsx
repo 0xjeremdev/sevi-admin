@@ -98,19 +98,13 @@ const CREATE_PRODUCT = gql`
   }
 `;
 const CREATE_PRESIGNED_POST = gql`
-mutation(
-  $type: UploadTypeEnum!
-  $account: String
-) {
-  createPreSignedPost(
-    type: $type
-    account: $account
-  ) {
-    data
-    key
-    url
+  mutation($type: UploadTypeEnum!, $account: String) {
+    createPreSignedPost(type: $type, account: $account) {
+      data
+      key
+      url
+    }
   }
-}
 `;
 type Props = any;
 
@@ -145,77 +139,39 @@ const AddProduct: React.FC<Props> = (props) => {
     setTag(value);
   };
 
-
   async function startUpload(file: File, presignedUrl: string, key: string) {
-    console.log('file:', file)
-    console.log('presignedUrl:', presignedUrl)
-
-   const send = await axios({
+    const send = await axios({
       method: "PUT",
       url: presignedUrl,
       data: file,
-      headers: { "Content-Type": "multipart/form-data" }
- })
-
-    // const formData = new FormData();
-
-    // formData.append("file", file);
-    // formData.append("Content-Type", file.type);
-
-    // const sendImage = await fetch(presignedUrl, {
-    //   method: 'put',
-    //   body: formData
-    // })
-    // console.log('sendImage:', sendImage)
-    // return new Promise(function (resolve, reject) {
-    //   const xhr = new XMLHttpRequest();
-    //   xhr.onreadystatechange = function () {
-    //     var status = xhr.status;
-    //     if (xhr.readyState === 4) {
-    //       if (xhr.status === 200) {
-    //         resolve("good");
-    //       } else {
-    //         reject(status);
-    //       }
-    //     }
-    //   };
-    //   var fd = new FormData();
-    //   fd.append("key", key);
-    //   fd.append("acl", "public-read");
-    //   fd.append("Content-Type", file.type);
-    //   fd.append("AWSAccessKeyId", key);
-    //   // fd.append('policy', 'YOUR POLICY')
-    //   fd.append("signature", key);
-
-    //   fd.append("file", file);
-    //   xhr.open("PUT", presignedUrl);
-    //   xhr.send(fd);
-    // });
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (send.status == 200) return "good";
+    else return "bad";
   }
   const handleTypeChange = ({ value }) => {
     setValue("type", value);
     setType(value);
   };
 
-
   const handleUploader = async (files) => {
-    console.log('files all:', files)
     const file = files[0];
-    console.log('filenem:', file)
     const presignedUrl = await getURL({
-      variables: { type: "PRODUCT", account: currentWallet , imageName: file.name, imageType: file.type},
+      variables: {
+        type: "PRODUCT",
+        account: currentWallet,
+        imageName: file.name,
+        imageType: file.type,
+      },
     });
-    console.log('presignedUrl:', presignedUrl)
-    // console.log(url);
     const sendNow = await startUpload(
       file,
       presignedUrl.data.createPreSignedPost.url,
       presignedUrl.data.createPreSignedPost.key
     );
-    console.log(sendNow);
+    if (sendNow != "good") return;
     var url = new Url(presignedUrl.data.createPreSignedPost.url);
-    console.log(`${url.origin}${url.pathname}`);
-    setValue("image", files[0].path);
+    setValue("picture", `${url.origin}${url.pathname}`);
   };
   const onSubmit = (data) => {
     // const newProduct = {
@@ -232,11 +188,10 @@ const AddProduct: React.FC<Props> = (props) => {
     //   slug: data.name,
     //   creation_date: new Date(),
     // };
-    console.log(data);
     createProduct({
       variables: {
         account: currentWallet,
-        picture: "",
+        picture: data.picture,
         name: data.name,
         description: data.description,
         price: Number(data.price),
