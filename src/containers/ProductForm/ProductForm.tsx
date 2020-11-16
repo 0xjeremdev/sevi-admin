@@ -73,27 +73,43 @@ const GET_PRODUCTS = gql`
   }
 `;
 const CREATE_PRODUCT = gql`
-  mutation createProduct(
-    $account: String!
-    $picture: String!
-    $name: String!
-    $description: String!
+  mutation(
     $price: Int!
+    $description: String!
+    $name: String!
+    $sending: Boolean!
+    $pickup: Boolean!
+    $barter: Boolean!
+    $digital: Boolean!
+    $renting: Boolean!
+    $credit: Boolean!
+    $gallery: [ProductGalleryInput!]!
+    $account: String!
+    $primaryCatagory: String!
+    $type: ListingTypeEnum!
   ) {
     createProduct(
       account: $account
       input: {
-        picture: $picture
+        price: $price
         name: $name
         description: $description
-        price: $price
+        exchange: {
+          sending: $sending
+          renting: $renting
+          pickup: $pickup
+          barter: $barter
+          digital: $digital
+          credit: $credit
+        }
+        gallery: $gallery
+        categories: { type: $type, primary: $primaryCatagory }
       }
     ) {
-      _id
-      picture
-      name
       description
       price
+      name
+      _id
     }
   }
 `;
@@ -195,6 +211,19 @@ const AddProduct: React.FC<Props> = (props) => {
         name: data.name,
         description: data.description,
         price: Number(data.price),
+        // sending: data.sending,
+        // pickup: data.pickup,
+        // barter: data.barter,
+        // digital: data.digital,
+        sending: true,
+        pickup: true,
+        barter: true,
+        digital: true,
+        renting: true,
+        credit: true,
+        gallery: [],
+        primaryCatagory: "primary",
+        type: "NEW_PRODUCT",
       },
     });
     closeDrawer();

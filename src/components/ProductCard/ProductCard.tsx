@@ -1,4 +1,5 @@
 import React from "react";
+import { Delete } from "baseui/icon";
 import {
   ProductCardWrapper,
   ProductImageWrapper,
@@ -15,6 +16,7 @@ import {
   DiscountedPrice,
 } from "./ProductCard.style";
 import { useDrawerDispatch } from "context/DrawerContext";
+import Button, { SHAPE } from "components/Button/Button";
 
 type ProductCardProps = {
   title: string;
@@ -26,6 +28,7 @@ type ProductCardProps = {
   salePrice?: number;
   orderId?: number;
   discountInPercent?: number;
+  onDelete: Function;
   data: any;
 };
 
@@ -39,6 +42,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   currency,
   data,
   orderId,
+  onDelete,
   ...props
 }) => {
   const dispatch = useDrawerDispatch();
@@ -51,12 +55,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
     });
   }, [dispatch, data]);
   return (
-    <ProductCardWrapper
-      {...props}
-      className="product-card"
-      onClick={openDrawer}
-    >
-      <ProductImageWrapper>
+    <ProductCardWrapper {...props} className="product-card">
+      <ProductImageWrapper onClick={openDrawer}>
         <Image url={image} className="product-image" />
         {discountInPercent && discountInPercent !== 0 ? (
           <>
@@ -84,6 +84,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           </ProductPriceWrapper>
 
           <OrderID>{orderId}</OrderID>
+          <Button onClick={() => onDelete(data._id)}>Delete</Button>
         </ProductMeta>
       </ProductInfo>
     </ProductCardWrapper>

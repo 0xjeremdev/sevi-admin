@@ -47,19 +47,36 @@ const UPDATE_PRODUCT = gql`
   mutation updateProduct(
     $account: String!
     $id: String!
-    $picture: String!
     $name: String!
+    $sending: Boolean!
+    $pickup: Boolean!
+    $barter: Boolean!
+    $digital: Boolean!
+    $renting: Boolean!
+    $credit: Boolean!
+    $gallery: [ProductGalleryInput!]!
     $description: String!
     $price: Int!
+    $primaryCatagory: String!
+    $type: ListingTypeEnum!
   ) {
     updateProduct(
       account: $account
       id: $id
       input: {
-        picture: $picture
         name: $name
         description: $description
+        exchange: {
+          sending: $sending
+          renting: $renting
+          pickup: $pickup
+          barter: $barter
+          digital: $digital
+          credit: $credit
+        }
+        gallery: $gallery
         price: $price
+        categories: { type: $type, primary: $primaryCatagory }
       }
     ) {
       _id
@@ -160,6 +177,19 @@ const AddProduct: React.FC<Props> = () => {
         name: new_data.name,
         description: new_data.description,
         price: Number(new_data.price),
+        // sending: data.sending,
+        // pickup: data.pickup,
+        // barter: data.barter,
+        // digital: data.digital,
+        sending: true,
+        pickup: true,
+        barter: true,
+        digital: true,
+        renting: true,
+        credit: true,
+        gallery: [],
+        primaryCatagory: "primary",
+        type: "NEW_PRODUCT",
       },
     });
     console.log(result);
