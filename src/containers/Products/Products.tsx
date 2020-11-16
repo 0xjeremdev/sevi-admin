@@ -4,7 +4,7 @@ import Button from "components/Button/Button";
 import { Grid, Row as Rows, Col as Column } from "components/FlexBox/FlexBox";
 import Input from "components/Input/Input";
 import Select from "components/Select/Select";
-import { useQuery, gql } from "@apollo/client";
+import { useQuery, gql, useMutation } from "@apollo/client";
 import { Header, Heading } from "components/Wrapper.style";
 import Fade from "react-reveal/Fade";
 import ProductCard from "components/ProductCard/ProductCard";
@@ -106,27 +106,35 @@ const SEARCH_PRODUCT = gql`
       hits {
         _id
         picture
-        created
         name
         description
-        vendorID
-        vendorName
-        vendorType
-        location {
-          lat
-          lon
+        price
+        exchange {
+          sending
+          pickup
+          barter
+          digital
+        }
+        gallery {
+          url
         }
         category {
+          type
           primary
         }
-        price
       }
       total
       scroll
     }
   }
 `;
-
+const DELETE_PRODUCT = gql`
+  mutation deleteProduct($id: String!) {
+    deleteProduct(id: $id) {
+      _id
+    }
+  }
+`;
 export default function Products() {
   // const { data, error, refetch, fetchMore } = useQuery(GET_PRODUCTS, {
   //   variables: { account },
@@ -135,6 +143,8 @@ export default function Products() {
   const { data, error, refetch, fetchMore } = useQuery(SEARCH_PRODUCT, {
     variables: { searchKey: search },
   });
+  console.log(data);
+  const [deleteProduct] = useMutation(DELETE_PRODUCT);
   // const [loadingMore, toggleLoading] = useState(false);
   // const [type, setType] = useState([]);
   // const [priceOrder, setPriceOrder] = useState([]);
@@ -190,6 +200,11 @@ export default function Products() {
     const value = event.currentTarget.value;
     setSearch(value);
     // refetch({ searchKey: "" });
+  }
+  async function productDelete(p_id) {
+    const res = await deleteProduct({ variables: { id: p_id } });
+    console.log(res);
+    refetch();
   }
   // console.log(data);
   return (
@@ -260,6 +275,7 @@ export default function Products() {
                         price={item.price}
                         salePrice={item.price}
                         discountInPercent={item.discountInPercent}
+                        onDelete={productDelete}
                         data={item}
                       />
                     </Fade>

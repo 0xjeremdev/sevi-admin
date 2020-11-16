@@ -47,6 +47,7 @@ const GetWallet = gql`
   query {
     walletOverview {
       walletID
+      name
       wallet {
         account
       }
@@ -75,7 +76,7 @@ const Topbar = ({ refs }: any) => {
   let accountOptions = [];
   if (wallet_data.data) {
     accountOptions = wallet_data.data.walletOverview.map((item) => {
-      return { value: item.wallet.account, label: item.wallet.account };
+      return { value: item.wallet.account, label: item.name };
     });
   }
   const handleWalletAccount = ({ value }) => {
