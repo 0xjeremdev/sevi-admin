@@ -48,8 +48,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "eject": "react-scripts eject",
-    "serve": "serve -s build",
-    "deploy": "aws s3 sync build/ s3://sevi-admin-web"
+    "serve": "serve -s build"
   },
   "eslintConfig": {
     "extends": "react-app"

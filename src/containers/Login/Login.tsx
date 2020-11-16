@@ -112,7 +112,7 @@ export default () => {
                 <LogoWrapper>
                   <LogoImage src={Logoimage} alt="pickbazar-admin" />
                 </LogoWrapper>
-                <FormTitle>Login to admin account</FormTitle>
+                <FormTitle>Scan with Sevi to Login to your admin account</FormTitle>
               </FormFields>
               {/* <FormFields>
                 <FormLabel>Username</FormLabel>
