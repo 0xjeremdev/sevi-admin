@@ -2,6 +2,7 @@ import { useCreateContext } from "./create-context";
 
 const initialState = {
   currentWallet: "",
+  productUpdated: false,
 };
 type State = typeof initialState;
 type Action = any;
@@ -11,6 +12,11 @@ function reducer(state: State, action: Action) {
       return {
         ...state,
         currentWallet: action.data,
+      };
+    case "PRODUCT_UPDATED":
+      return {
+        ...state,
+        productUpdated: action.data,
       };
     default:
       return state;

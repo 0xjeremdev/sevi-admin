@@ -9,7 +9,7 @@ import DrawerBox from "components/DrawerBox/DrawerBox";
 import { Row, Col } from "components/FlexBox/FlexBox";
 import Input from "components/Input/Input";
 import { Textarea } from "components/Textarea/Textarea";
-import { useWalletState } from "context/WalletContext";
+import { useWalletState, useWalletDispatch } from "context/WalletContext";
 import Select from "components/Select/Select";
 import { FormFields, FormLabel } from "components/FormFields/FormFields";
 import axios from "axios";
@@ -102,6 +102,16 @@ const AddProduct: React.FC<Props> = () => {
   const dispatch = useDrawerDispatch();
   const data = useDrawerState("data");
   const currentWallet = useWalletState("currentWallet");
+  const wallet_dispatch = useWalletDispatch();
+  const setProductUpdated = useCallback(
+    (flag) => {
+      wallet_dispatch({
+        type: "PRODUCT_UPDATED",
+        data: flag,
+      });
+    },
+    [wallet_dispatch]
+  );
   //===================================================
   const closeDrawer = useCallback(() => dispatch({ type: "CLOSE_DRAWER" }), [
     dispatch,
@@ -121,7 +131,6 @@ const AddProduct: React.FC<Props> = () => {
     // register({ name: "_id" });
     // register({ name: "__typename" });
   }, [register]);
-
   const handleMultiChange = ({ value }) => {
     setValue("categories", value);
     setTag(value);
@@ -173,7 +182,6 @@ const AddProduct: React.FC<Props> = () => {
       variables: {
         account: currentWallet,
         id: new_data._id,
-        picture: new_data.picture,
         name: new_data.name,
         description: new_data.description,
         price: Number(new_data.price),
@@ -187,12 +195,15 @@ const AddProduct: React.FC<Props> = () => {
         digital: true,
         renting: true,
         credit: true,
-        gallery: [],
+        gallery:
+          new_data.picture == null || new_data.picture == ""
+            ? []
+            : [{ url: new_data.picture }],
         primaryCatagory: "primary",
         type: "NEW_PRODUCT",
       },
     });
-    console.log(result);
+    setProductUpdated(true);
     closeDrawer();
   };
 
@@ -226,7 +237,12 @@ const AddProduct: React.FC<Props> = () => {
             </Col>
             <Col lg={8}>
               <DrawerBox>
-                <Uploader onChange={handleUploader} imageURL={data.picture} />
+                <Uploader
+                  onChange={handleUploader}
+                  imageURL={
+                    data.gallery.length > 0 ? data.gallery[0].url : null
+                  }
+                />
               </DrawerBox>
             </Col>
           </Row>

@@ -12,7 +12,7 @@ import Input from "components/Input/Input";
 import { Textarea } from "components/Textarea/Textarea";
 import Select from "components/Select/Select";
 import { FormFields, FormLabel } from "components/FormFields/FormFields";
-import { useWalletState } from "context/WalletContext";
+import { useWalletState, useWalletDispatch } from "context/WalletContext";
 import Url from "url-parse";
 import axios from "axios";
 
@@ -127,6 +127,16 @@ type Props = any;
 const AddProduct: React.FC<Props> = (props) => {
   const dispatch = useDrawerDispatch();
   const currentWallet = useWalletState("currentWallet");
+  const wallet_dispatch = useWalletDispatch();
+  const setProductUpdated = useCallback(
+    (flag) => {
+      wallet_dispatch({
+        type: "PRODUCT_UPDATED",
+        data: flag,
+      });
+    },
+    [wallet_dispatch]
+  );
   const closeDrawer = useCallback(() => dispatch({ type: "CLOSE_DRAWER" }), [
     dispatch,
   ]);
@@ -189,7 +199,7 @@ const AddProduct: React.FC<Props> = (props) => {
     var url = new Url(presignedUrl.data.createPreSignedPost.url);
     setValue("picture", `${url.origin}${url.pathname}`);
   };
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     // const newProduct = {
     //   id: uuidv4(),
     //   name: data.name,
@@ -204,10 +214,9 @@ const AddProduct: React.FC<Props> = (props) => {
     //   slug: data.name,
     //   creation_date: new Date(),
     // };
-    createProduct({
+    await createProduct({
       variables: {
         account: currentWallet,
-        picture: data.picture,
         name: data.name,
         description: data.description,
         price: Number(data.price),
@@ -221,11 +230,15 @@ const AddProduct: React.FC<Props> = (props) => {
         digital: true,
         renting: true,
         credit: true,
-        gallery: [],
+        gallery:
+          data.picture == null || data.picture == ""
+            ? []
+            : [{ url: data.picture }],
         primaryCatagory: "primary",
         type: "NEW_PRODUCT",
       },
     });
+    setProductUpdated(true);
     closeDrawer();
   };
 

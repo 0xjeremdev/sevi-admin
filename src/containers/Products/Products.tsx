@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { styled, withStyle } from "baseui";
 import Button from "components/Button/Button";
 import { Grid, Row as Rows, Col as Column } from "components/FlexBox/FlexBox";
@@ -11,6 +11,7 @@ import ProductCard from "components/ProductCard/ProductCard";
 import NoResult from "components/NoResult/NoResult";
 import { CURRENCY } from "settings/constants";
 import Placeholder from "components/Placeholder/Placeholder";
+import { useWalletDispatch, useWalletState } from "context/WalletContext";
 
 export const ProductsRow = styled("div", ({ $theme }) => ({
   display: "flex",
@@ -140,10 +141,28 @@ export default function Products() {
   //   variables: { account },
   // });
   const [search, setSearch] = useState("");
+  const productUpdated = useWalletState("productUpdated");
+  const wallet_dispatch = useWalletDispatch();
+  const setProductUpdated = useCallback(
+    (flag) => {
+      wallet_dispatch({
+        type: "PRODUCT_UPDATED",
+        data: flag,
+      });
+    },
+    [wallet_dispatch]
+  );
+
   const { data, error, refetch, fetchMore } = useQuery(SEARCH_PRODUCT, {
     variables: { searchKey: search },
   });
-  console.log(data);
+  console.log("product-updated:", productUpdated);
+  console.log("product-updated:", data);
+  if (productUpdated) {
+    refetch({ searchKey: search }).then(() => {
+      setProductUpdated(false);
+    });
+  }
   const [deleteProduct] = useMutation(DELETE_PRODUCT);
   // const [loadingMore, toggleLoading] = useState(false);
   // const [type, setType] = useState([]);
@@ -204,7 +223,7 @@ export default function Products() {
   async function productDelete(p_id) {
     const res = await deleteProduct({ variables: { id: p_id } });
     console.log(res);
-    refetch();
+    refetch({ searchKey: search });
   }
   // console.log(data);
   return (
@@ -270,7 +289,9 @@ export default function Products() {
                       <ProductCard
                         title={item.name}
                         weight={item.unit}
-                        image={item.picture}
+                        image={
+                          item.gallery.length > 0 ? item.gallery[0].url : null
+                        }
                         currency={CURRENCY}
                         price={item.price}
                         salePrice={item.price}
