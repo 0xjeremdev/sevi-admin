@@ -122,6 +122,7 @@ const SEARCH_PRODUCT = gql`
         category {
           type
           primary
+          subCategory
         }
       }
       total
@@ -156,8 +157,6 @@ export default function Products() {
   const { data, error, refetch, fetchMore } = useQuery(SEARCH_PRODUCT, {
     variables: { searchKey: search },
   });
-  console.log("product-updated:", productUpdated);
-  console.log("product-updated:", data);
   if (productUpdated) {
     refetch({ searchKey: search }).then(() => {
       setProductUpdated(false);

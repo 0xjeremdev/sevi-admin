@@ -10,6 +10,7 @@ import DrawerBox from "components/DrawerBox/DrawerBox";
 import { Row, Col } from "components/FlexBox/FlexBox";
 import Input from "components/Input/Input";
 import { Textarea } from "components/Textarea/Textarea";
+import Checkbox from "components/CheckBox/CheckBox";
 import Select from "components/Select/Select";
 import { FormFields, FormLabel } from "components/FormFields/FormFields";
 import { useWalletState, useWalletDispatch } from "context/WalletContext";
@@ -39,11 +40,11 @@ const options = [
 ];
 
 const typeOptions = [
-  { value: "grocery", name: "Grocery", id: "1" },
-  { value: "women-cloths", name: "Women Cloths", id: "2" },
-  { value: "bags", name: "Bags", id: "3" },
-  { value: "makeup", name: "Makeup", id: "4" },
+  { value: "NEW_PRODUCT", name: "NEW_PRODUCT", id: "1" },
+  { value: "SERVICE", name: "SERVICE", id: "2" },
+  { value: "USED_PRODUCT", name: "USED_PRODUCT", id: "3" },
 ];
+
 const GET_PRODUCTS = gql`
   query getProducts(
     $type: String
@@ -74,6 +75,7 @@ const GET_PRODUCTS = gql`
 `;
 const CREATE_PRODUCT = gql`
   mutation(
+    $account: String!
     $price: Int!
     $description: String!
     $name: String!
@@ -84,8 +86,8 @@ const CREATE_PRODUCT = gql`
     $renting: Boolean!
     $credit: Boolean!
     $gallery: [ProductGalleryInput!]!
-    $account: String!
     $primaryCatagory: String!
+    $subCategory: String!
     $type: ListingTypeEnum!
   ) {
     createProduct(
@@ -103,7 +105,11 @@ const CREATE_PRODUCT = gql`
           credit: $credit
         }
         gallery: $gallery
-        categories: { type: $type, primary: $primaryCatagory }
+        categories: {
+          type: $type
+          primary: $primaryCatagory
+          subCategory: $subCategory
+        }
       }
     ) {
       description
@@ -140,16 +146,30 @@ const AddProduct: React.FC<Props> = (props) => {
   const closeDrawer = useCallback(() => dispatch({ type: "CLOSE_DRAWER" }), [
     dispatch,
   ]);
-  const { register, handleSubmit, setValue } = useForm();
-  const [type, setType] = useState([]);
-  const [tag, setTag] = useState([]);
+  const { register, handleSubmit, setValue } = useForm({
+    defaultValues: {
+      name: "",
+      price: 0,
+      description: "",
+      type: "NEW_PRODUCT",
+      primary: "",
+      subCategory: "",
+      picture: "",
+    },
+  });
+  const [type, setType] = useState([{ value: "NEW_PRODUCT" }]);
   const [description, setDescription] = useState("");
+  const [checkboxs, setCheckBox] = useState({
+    barter: false,
+    sending: false,
+    pickup: false,
+    digital: false,
+  });
   const [getURL] = useMutation(CREATE_PRESIGNED_POST);
 
   React.useEffect(() => {
-    // register({ name: "type" });
-    // register({ name: "categories" });
     register({ name: "picture" });
+    register({ name: "type", required: true });
     register({ name: "description", required: true });
   }, [register]);
 
@@ -160,10 +180,6 @@ const AddProduct: React.FC<Props> = (props) => {
   };
 
   const [createProduct] = useMutation(CREATE_PRODUCT);
-  const handleMultiChange = ({ value }) => {
-    setValue("categories", value);
-    setTag(value);
-  };
 
   async function startUpload(file: File, presignedUrl: string, key: string) {
     const send = await axios({
@@ -176,10 +192,15 @@ const AddProduct: React.FC<Props> = (props) => {
     else return "bad";
   }
   const handleTypeChange = ({ value }) => {
-    setValue("type", value);
+    setValue("type", value.length > 0 ? value[0].value : "");
     setType(value);
   };
-
+  const handleChecbox = (e) => {
+    let nextCheckboxs = { ...checkboxs };
+    nextCheckboxs[e.currentTarget.name] = e.currentTarget.checked;
+    setCheckBox(nextCheckboxs);
+    setValue(e.currentTarget.name, e.currentTarget.checked);
+  };
   const handleUploader = async (files) => {
     const file = files[0];
     const presignedUrl = await getURL({
@@ -200,42 +221,25 @@ const AddProduct: React.FC<Props> = (props) => {
     setValue("picture", `${url.origin}${url.pathname}`);
   };
   const onSubmit = async (data) => {
-    // const newProduct = {
-    //   id: uuidv4(),
-    //   name: data.name,
-    //   type: data.type[0].value,
-    //   description: data.description,
-    //   image: data.image && data.image.length !== 0 ? data.image : "",
-    //   price: Number(data.price),
-    //   unit: data.unit,
-    //   salePrice: Number(data.salePrice),
-    //   discountInPercent: Number(data.discountInPercent),
-    //   quantity: Number(data.quantity),
-    //   slug: data.name,
-    //   creation_date: new Date(),
-    // };
     await createProduct({
       variables: {
         account: currentWallet,
         name: data.name,
         description: data.description,
         price: Number(data.price),
-        // sending: data.sending,
-        // pickup: data.pickup,
-        // barter: data.barter,
-        // digital: data.digital,
-        sending: true,
-        pickup: true,
-        barter: true,
-        digital: true,
+        sending: checkboxs.sending,
+        pickup: checkboxs.pickup,
+        barter: checkboxs.barter,
+        digital: checkboxs.digital,
         renting: true,
         credit: true,
         gallery:
           data.picture == null || data.picture == ""
             ? []
             : [{ url: data.picture }],
-        primaryCatagory: "primary",
-        type: "NEW_PRODUCT",
+        primaryCatagory: data.primary,
+        type: data.type,
+        subCategory: data.subCategory,
       },
     });
     setProductUpdated(true);
@@ -313,11 +317,6 @@ const AddProduct: React.FC<Props> = (props) => {
                   />
                 </FormFields>
 
-                {/* <FormFields>
-                  <FormLabel>Unit</FormLabel>
-                  <Input type="text" inputRef={register} name="unit" />
-                </FormFields> */}
-
                 <FormFields>
                   <FormLabel>Price</FormLabel>
                   <Input
@@ -326,31 +325,7 @@ const AddProduct: React.FC<Props> = (props) => {
                     name="price"
                   />
                 </FormFields>
-
-                {/* <FormFields>
-                  <FormLabel>Sale Price</FormLabel>
-                  <Input type="number" inputRef={register} name="salePrice" />
-                </FormFields> */}
-
-                {/* <FormFields>
-                  <FormLabel>Discount In Percent</FormLabel>
-                  <Input
-                    type="number"
-                    inputRef={register}
-                    name="discountInPercent"
-                  />
-                </FormFields> */}
-
-                {/* <FormFields>
-                  <FormLabel>Product Quantity</FormLabel>
-                  <Input
-                    type="number"
-                    inputRef={register({ required: true })}
-                    name="quantity"
-                  />
-                </FormFields> */}
-
-                {/* <FormFields>
+                <FormFields>
                   <FormLabel>Type</FormLabel>
                   <Select
                     options={typeOptions}
@@ -358,8 +333,8 @@ const AddProduct: React.FC<Props> = (props) => {
                     valueKey="value"
                     placeholder="Product Type"
                     value={type}
-                    searchable={false}
                     onChange={handleTypeChange}
+                    searchable={false}
                     overrides={{
                       Placeholder: {
                         style: ({ $theme }) => {
@@ -406,47 +381,109 @@ const AddProduct: React.FC<Props> = (props) => {
                       },
                     }}
                   />
-                </FormFields> */}
-
-                {/* <FormFields>
-                  <FormLabel>Categories</FormLabel>
-                  <Select
-                    options={options}
-                    labelKey="name"
-                    valueKey="value"
-                    placeholder="Product Tag"
-                    value={tag}
-                    onChange={handleMultiChange}
+                </FormFields>
+                <FormFields>
+                  <FormLabel>Category Primary</FormLabel>
+                  <Input
+                    inputRef={register({ required: true, maxLength: 20 })}
+                    name="primary"
+                  />
+                </FormFields>
+                <FormFields>
+                  <FormLabel>Category SubCategory</FormLabel>
+                  <Input
+                    inputRef={register({ required: true, maxLength: 20 })}
+                    name="subCategory"
+                  />
+                </FormFields>
+                <FormFields>
+                  <FormLabel>Exchange Barter</FormLabel>
+                  <Checkbox
+                    name="barter"
+                    checked={checkboxs.barter}
+                    onChange={handleChecbox}
                     overrides={{
-                      Placeholder: {
-                        style: ({ $theme }) => {
-                          return {
-                            ...$theme.typography.fontBold14,
-                            color: $theme.colors.textNormal,
-                          };
-                        },
-                      },
-                      DropdownListItem: {
-                        style: ({ $theme }) => {
-                          return {
-                            ...$theme.typography.fontBold14,
-                            color: $theme.colors.textNormal,
-                          };
-                        },
-                      },
-                      Popover: {
-                        props: {
-                          overrides: {
-                            Body: {
-                              style: { zIndex: 5 },
-                            },
-                          },
+                      Checkmark: {
+                        style: {
+                          borderTopWidth: "2px",
+                          borderRightWidth: "2px",
+                          borderBottomWidth: "2px",
+                          borderLeftWidth: "2px",
+                          borderTopLeftRadius: "4px",
+                          borderTopRightRadius: "4px",
+                          borderBottomRightRadius: "4px",
+                          borderBottomLeftRadius: "4px",
                         },
                       },
                     }}
-                    multi
                   />
-                </FormFields> */}
+                </FormFields>
+                <FormFields>
+                  <FormLabel>Exchange Sending</FormLabel>
+                  <Checkbox
+                    name="sending"
+                    checked={checkboxs.sending}
+                    onChange={handleChecbox}
+                    overrides={{
+                      Checkmark: {
+                        style: {
+                          borderTopWidth: "2px",
+                          borderRightWidth: "2px",
+                          borderBottomWidth: "2px",
+                          borderLeftWidth: "2px",
+                          borderTopLeftRadius: "4px",
+                          borderTopRightRadius: "4px",
+                          borderBottomRightRadius: "4px",
+                          borderBottomLeftRadius: "4px",
+                        },
+                      },
+                    }}
+                  />
+                </FormFields>
+                <FormFields>
+                  <FormLabel>Exchange Pickup</FormLabel>
+                  <Checkbox
+                    name="pickup"
+                    checked={checkboxs.pickup}
+                    onChange={handleChecbox}
+                    overrides={{
+                      Checkmark: {
+                        style: {
+                          borderTopWidth: "2px",
+                          borderRightWidth: "2px",
+                          borderBottomWidth: "2px",
+                          borderLeftWidth: "2px",
+                          borderTopLeftRadius: "4px",
+                          borderTopRightRadius: "4px",
+                          borderBottomRightRadius: "4px",
+                          borderBottomLeftRadius: "4px",
+                        },
+                      },
+                    }}
+                  />
+                </FormFields>
+                <FormFields>
+                  <FormLabel>Exchange Digital</FormLabel>
+                  <Checkbox
+                    name="digital"
+                    checked={checkboxs.digital}
+                    onChange={handleChecbox}
+                    overrides={{
+                      Checkmark: {
+                        style: {
+                          borderTopWidth: "2px",
+                          borderRightWidth: "2px",
+                          borderBottomWidth: "2px",
+                          borderLeftWidth: "2px",
+                          borderTopLeftRadius: "4px",
+                          borderTopRightRadius: "4px",
+                          borderBottomRightRadius: "4px",
+                          borderBottomLeftRadius: "4px",
+                        },
+                      },
+                    }}
+                  />
+                </FormFields>
               </DrawerBox>
             </Col>
           </Row>
