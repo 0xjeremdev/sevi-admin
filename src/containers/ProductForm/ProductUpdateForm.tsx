@@ -15,6 +15,7 @@ import Select from "components/Select/Select";
 import { FormFields, FormLabel } from "components/FormFields/FormFields";
 import axios from "axios";
 import Url from "url-parse";
+import { InLineLoader } from "components/InlineLoader/InlineLoader";
 
 import {
   Form,
@@ -108,6 +109,7 @@ const AddProduct: React.FC<Props> = () => {
   const data = useDrawerState("data");
   const currentWallet = useWalletState("currentWallet");
   const wallet_dispatch = useWalletDispatch();
+  const [loading, setLoading] = useState(false);
   const setProductUpdated = useCallback(
     (flag) => {
       wallet_dispatch({
@@ -195,7 +197,7 @@ const AddProduct: React.FC<Props> = () => {
   const [updateProductHandler] = useMutation(UPDATE_PRODUCT);
   const onSubmit = async (updated_data) => {
     const new_data = { ...data, ...updated_data };
-    console.log(new_data);
+    setLoading(true);
     const result = await updateProductHandler({
       variables: {
         account: currentWallet,
@@ -218,6 +220,7 @@ const AddProduct: React.FC<Props> = () => {
         subCategory: new_data.subCategory,
       },
     });
+    setLoading(false);
     setProductUpdated(true);
     closeDrawer();
   };
@@ -227,277 +230,281 @@ const AddProduct: React.FC<Props> = () => {
       <DrawerTitleWrapper>
         <DrawerTitle>Update Product</DrawerTitle>
       </DrawerTitleWrapper>
-
-      <Form
-        onSubmit={handleSubmit(onSubmit)}
-        style={{ height: "100%" }}
-        noValidate
-      >
-        <Scrollbars
-          autoHide
-          renderView={(props) => (
-            <div {...props} style={{ ...props.style, overflowX: "hidden" }} />
-          )}
-          renderTrackHorizontal={(props) => (
-            <div
-              {...props}
-              style={{ display: "none" }}
-              className="track-horizontal"
-            />
-          )}
+      {loading ? (
+        <InLineLoader />
+      ) : (
+        <Form
+          onSubmit={handleSubmit(onSubmit)}
+          style={{ height: "100%" }}
+          noValidate
         >
-          <Row>
-            <Col lg={4}>
-              <FieldDetails>Upload your Product image here</FieldDetails>
-            </Col>
-            <Col lg={8}>
-              <DrawerBox>
-                <Uploader
-                  onChange={handleUploader}
-                  imageURL={
-                    data.gallery.length > 0 ? data.gallery[0].url : null
-                  }
-                />
-              </DrawerBox>
-            </Col>
-          </Row>
-
-          <Row>
-            <Col lg={4}>
-              <FieldDetails>
-                Add your Product description and necessary information from here
-              </FieldDetails>
-            </Col>
-
-            <Col lg={8}>
-              <DrawerBox>
-                <FormFields>
-                  <FormLabel>Name</FormLabel>
-                  <Input
-                    inputRef={register({ required: true, maxLength: 20 })}
-                    name="name"
+          <Scrollbars
+            autoHide
+            renderView={(props) => (
+              <div {...props} style={{ ...props.style, overflowX: "hidden" }} />
+            )}
+            renderTrackHorizontal={(props) => (
+              <div
+                {...props}
+                style={{ display: "none" }}
+                className="track-horizontal"
+              />
+            )}
+          >
+            <Row>
+              <Col lg={4}>
+                <FieldDetails>Upload your Product image here</FieldDetails>
+              </Col>
+              <Col lg={8}>
+                <DrawerBox>
+                  <Uploader
+                    onChange={handleUploader}
+                    imageURL={
+                      data.gallery.length > 0 ? data.gallery[0].url : null
+                    }
                   />
-                </FormFields>
+                </DrawerBox>
+              </Col>
+            </Row>
 
-                <FormFields>
-                  <FormLabel>Description</FormLabel>
-                  <Textarea
-                    value={description}
-                    name="description"
-                    onChange={handleDescriptionChange}
-                  />
-                </FormFields>
-                <FormFields>
-                  <FormLabel>Price</FormLabel>
-                  <Input
-                    type="number"
-                    inputRef={register({ required: true })}
-                    name="price"
-                  />
-                </FormFields>
-                <FormFields>
-                  <FormLabel>Type</FormLabel>
-                  <Select
-                    options={typeOptions}
-                    labelKey="name"
-                    valueKey="value"
-                    placeholder="Product Type"
-                    value={type}
-                    onChange={handleTypeChange}
-                    searchable={false}
-                    overrides={{
-                      Placeholder: {
-                        style: ({ $theme }) => {
-                          return {
-                            ...$theme.typography.fontBold14,
-                            color: $theme.colors.textNormal,
-                          };
+            <Row>
+              <Col lg={4}>
+                <FieldDetails>
+                  Add your Product description and necessary information from
+                  here
+                </FieldDetails>
+              </Col>
+
+              <Col lg={8}>
+                <DrawerBox>
+                  <FormFields>
+                    <FormLabel>Name</FormLabel>
+                    <Input
+                      inputRef={register({ required: true, maxLength: 20 })}
+                      name="name"
+                    />
+                  </FormFields>
+
+                  <FormFields>
+                    <FormLabel>Description</FormLabel>
+                    <Textarea
+                      value={description}
+                      name="description"
+                      onChange={handleDescriptionChange}
+                    />
+                  </FormFields>
+                  <FormFields>
+                    <FormLabel>Price</FormLabel>
+                    <Input
+                      type="number"
+                      inputRef={register({ required: true })}
+                      name="price"
+                    />
+                  </FormFields>
+                  <FormFields>
+                    <FormLabel>Type</FormLabel>
+                    <Select
+                      options={typeOptions}
+                      labelKey="name"
+                      valueKey="value"
+                      placeholder="Product Type"
+                      value={type}
+                      onChange={handleTypeChange}
+                      searchable={false}
+                      overrides={{
+                        Placeholder: {
+                          style: ({ $theme }) => {
+                            return {
+                              ...$theme.typography.fontBold14,
+                              color: $theme.colors.textNormal,
+                            };
+                          },
                         },
-                      },
-                      DropdownListItem: {
-                        style: ({ $theme }) => {
-                          return {
-                            ...$theme.typography.fontBold14,
-                            color: $theme.colors.textNormal,
-                          };
+                        DropdownListItem: {
+                          style: ({ $theme }) => {
+                            return {
+                              ...$theme.typography.fontBold14,
+                              color: $theme.colors.textNormal,
+                            };
+                          },
                         },
-                      },
-                      OptionContent: {
-                        style: ({ $theme, $selected }) => {
-                          return {
-                            ...$theme.typography.fontBold14,
-                            color: $selected
-                              ? $theme.colors.textDark
-                              : $theme.colors.textNormal,
-                          };
+                        OptionContent: {
+                          style: ({ $theme, $selected }) => {
+                            return {
+                              ...$theme.typography.fontBold14,
+                              color: $selected
+                                ? $theme.colors.textDark
+                                : $theme.colors.textNormal,
+                            };
+                          },
                         },
-                      },
-                      SingleValue: {
-                        style: ({ $theme }) => {
-                          return {
-                            ...$theme.typography.fontBold14,
-                            color: $theme.colors.textNormal,
-                          };
+                        SingleValue: {
+                          style: ({ $theme }) => {
+                            return {
+                              ...$theme.typography.fontBold14,
+                              color: $theme.colors.textNormal,
+                            };
+                          },
                         },
-                      },
-                      Popover: {
-                        props: {
-                          overrides: {
-                            Body: {
-                              style: { zIndex: 5 },
+                        Popover: {
+                          props: {
+                            overrides: {
+                              Body: {
+                                style: { zIndex: 5 },
+                              },
                             },
                           },
                         },
-                      },
-                    }}
-                  />
-                </FormFields>
-                <FormFields>
-                  <FormLabel>Category Primary</FormLabel>
-                  <Input
-                    inputRef={register({ required: true, maxLength: 20 })}
-                    name="primary"
-                  />
-                </FormFields>
-                <FormFields>
-                  <FormLabel>Category SubCategory</FormLabel>
-                  <Input
-                    inputRef={register({ required: true, maxLength: 20 })}
-                    name="subCategory"
-                  />
-                </FormFields>
-                <FormFields>
-                  <FormLabel>Exchange Barter</FormLabel>
-                  <Checkbox
-                    name="barter"
-                    checked={checkboxs.barter}
-                    onChange={handleChecbox}
-                    overrides={{
-                      Checkmark: {
-                        style: {
-                          borderTopWidth: "2px",
-                          borderRightWidth: "2px",
-                          borderBottomWidth: "2px",
-                          borderLeftWidth: "2px",
-                          borderTopLeftRadius: "4px",
-                          borderTopRightRadius: "4px",
-                          borderBottomRightRadius: "4px",
-                          borderBottomLeftRadius: "4px",
+                      }}
+                    />
+                  </FormFields>
+                  <FormFields>
+                    <FormLabel>Category Primary</FormLabel>
+                    <Input
+                      inputRef={register({ required: true, maxLength: 20 })}
+                      name="primary"
+                    />
+                  </FormFields>
+                  <FormFields>
+                    <FormLabel>Category SubCategory</FormLabel>
+                    <Input
+                      inputRef={register({ required: true, maxLength: 20 })}
+                      name="subCategory"
+                    />
+                  </FormFields>
+                  <FormFields>
+                    <FormLabel>Exchange Barter</FormLabel>
+                    <Checkbox
+                      name="barter"
+                      checked={checkboxs.barter}
+                      onChange={handleChecbox}
+                      overrides={{
+                        Checkmark: {
+                          style: {
+                            borderTopWidth: "2px",
+                            borderRightWidth: "2px",
+                            borderBottomWidth: "2px",
+                            borderLeftWidth: "2px",
+                            borderTopLeftRadius: "4px",
+                            borderTopRightRadius: "4px",
+                            borderBottomRightRadius: "4px",
+                            borderBottomLeftRadius: "4px",
+                          },
                         },
-                      },
-                    }}
-                  />
-                </FormFields>
-                <FormFields>
-                  <FormLabel>Exchange Sending</FormLabel>
-                  <Checkbox
-                    name="sending"
-                    checked={checkboxs.sending}
-                    onChange={handleChecbox}
-                    overrides={{
-                      Checkmark: {
-                        style: {
-                          borderTopWidth: "2px",
-                          borderRightWidth: "2px",
-                          borderBottomWidth: "2px",
-                          borderLeftWidth: "2px",
-                          borderTopLeftRadius: "4px",
-                          borderTopRightRadius: "4px",
-                          borderBottomRightRadius: "4px",
-                          borderBottomLeftRadius: "4px",
+                      }}
+                    />
+                  </FormFields>
+                  <FormFields>
+                    <FormLabel>Exchange Sending</FormLabel>
+                    <Checkbox
+                      name="sending"
+                      checked={checkboxs.sending}
+                      onChange={handleChecbox}
+                      overrides={{
+                        Checkmark: {
+                          style: {
+                            borderTopWidth: "2px",
+                            borderRightWidth: "2px",
+                            borderBottomWidth: "2px",
+                            borderLeftWidth: "2px",
+                            borderTopLeftRadius: "4px",
+                            borderTopRightRadius: "4px",
+                            borderBottomRightRadius: "4px",
+                            borderBottomLeftRadius: "4px",
+                          },
                         },
-                      },
-                    }}
-                  />
-                </FormFields>
-                <FormFields>
-                  <FormLabel>Exchange Pickup</FormLabel>
-                  <Checkbox
-                    name="pickup"
-                    checked={checkboxs.pickup}
-                    onChange={handleChecbox}
-                    overrides={{
-                      Checkmark: {
-                        style: {
-                          borderTopWidth: "2px",
-                          borderRightWidth: "2px",
-                          borderBottomWidth: "2px",
-                          borderLeftWidth: "2px",
-                          borderTopLeftRadius: "4px",
-                          borderTopRightRadius: "4px",
-                          borderBottomRightRadius: "4px",
-                          borderBottomLeftRadius: "4px",
+                      }}
+                    />
+                  </FormFields>
+                  <FormFields>
+                    <FormLabel>Exchange Pickup</FormLabel>
+                    <Checkbox
+                      name="pickup"
+                      checked={checkboxs.pickup}
+                      onChange={handleChecbox}
+                      overrides={{
+                        Checkmark: {
+                          style: {
+                            borderTopWidth: "2px",
+                            borderRightWidth: "2px",
+                            borderBottomWidth: "2px",
+                            borderLeftWidth: "2px",
+                            borderTopLeftRadius: "4px",
+                            borderTopRightRadius: "4px",
+                            borderBottomRightRadius: "4px",
+                            borderBottomLeftRadius: "4px",
+                          },
                         },
-                      },
-                    }}
-                  />
-                </FormFields>
-                <FormFields>
-                  <FormLabel>Exchange Digital</FormLabel>
-                  <Checkbox
-                    name="digital"
-                    checked={checkboxs.digital}
-                    onChange={handleChecbox}
-                    overrides={{
-                      Checkmark: {
-                        style: {
-                          borderTopWidth: "2px",
-                          borderRightWidth: "2px",
-                          borderBottomWidth: "2px",
-                          borderLeftWidth: "2px",
-                          borderTopLeftRadius: "4px",
-                          borderTopRightRadius: "4px",
-                          borderBottomRightRadius: "4px",
-                          borderBottomLeftRadius: "4px",
+                      }}
+                    />
+                  </FormFields>
+                  <FormFields>
+                    <FormLabel>Exchange Digital</FormLabel>
+                    <Checkbox
+                      name="digital"
+                      checked={checkboxs.digital}
+                      onChange={handleChecbox}
+                      overrides={{
+                        Checkmark: {
+                          style: {
+                            borderTopWidth: "2px",
+                            borderRightWidth: "2px",
+                            borderBottomWidth: "2px",
+                            borderLeftWidth: "2px",
+                            borderTopLeftRadius: "4px",
+                            borderTopRightRadius: "4px",
+                            borderBottomRightRadius: "4px",
+                            borderBottomLeftRadius: "4px",
+                          },
                         },
-                      },
-                    }}
-                  />
-                </FormFields>
-              </DrawerBox>
-            </Col>
-          </Row>
-        </Scrollbars>
+                      }}
+                    />
+                  </FormFields>
+                </DrawerBox>
+              </Col>
+            </Row>
+          </Scrollbars>
 
-        <ButtonGroup>
-          <Button
-            kind={KIND.minimal}
-            onClick={closeDrawer}
-            overrides={{
-              BaseButton: {
-                style: ({ $theme }) => ({
-                  width: "50%",
-                  borderTopLeftRadius: "3px",
-                  borderTopRightRadius: "3px",
-                  borderBottomRightRadius: "3px",
-                  borderBottomLeftRadius: "3px",
-                  marginRight: "15px",
-                  color: $theme.colors.red400,
-                }),
-              },
-            }}
-          >
-            Cancel
-          </Button>
+          <ButtonGroup>
+            <Button
+              kind={KIND.minimal}
+              onClick={closeDrawer}
+              overrides={{
+                BaseButton: {
+                  style: ({ $theme }) => ({
+                    width: "50%",
+                    borderTopLeftRadius: "3px",
+                    borderTopRightRadius: "3px",
+                    borderBottomRightRadius: "3px",
+                    borderBottomLeftRadius: "3px",
+                    marginRight: "15px",
+                    color: $theme.colors.red400,
+                  }),
+                },
+              }}
+            >
+              Cancel
+            </Button>
 
-          <Button
-            type="submit"
-            overrides={{
-              BaseButton: {
-                style: ({ $theme }) => ({
-                  width: "50%",
-                  borderTopLeftRadius: "3px",
-                  borderTopRightRadius: "3px",
-                  borderBottomRightRadius: "3px",
-                  borderBottomLeftRadius: "3px",
-                }),
-              },
-            }}
-          >
-            Update Product
-          </Button>
-        </ButtonGroup>
-      </Form>
+            <Button
+              type="submit"
+              overrides={{
+                BaseButton: {
+                  style: ({ $theme }) => ({
+                    width: "50%",
+                    borderTopLeftRadius: "3px",
+                    borderTopRightRadius: "3px",
+                    borderBottomRightRadius: "3px",
+                    borderBottomLeftRadius: "3px",
+                  }),
+                },
+              }}
+            >
+              Update Product
+            </Button>
+          </ButtonGroup>
+        </Form>
+      )}
     </>
   );
 };

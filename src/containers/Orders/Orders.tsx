@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import { Grid, Row as Rows, Col as Column } from "components/FlexBox/FlexBox";
 import Select from "components/Select/Select";
 import Input from "components/Input/Input";
-
+import { useWalletState, useWalletDispatch } from "context/WalletContext";
 import { useQuery, gql } from "@apollo/client";
 import { Wrapper, Header, Heading } from "components/Wrapper.style";
 import Checkbox from "components/CheckBox/CheckBox";
@@ -18,15 +18,14 @@ import {
 import NoResult from "components/NoResult/NoResult";
 
 const GET_ORDERS = gql`
-  query getOrders($status: String, $limit: Int, $searchText: String) {
-    orders(status: $status, limit: $limit, searchText: $searchText) {
-      id
-      customer_id
-      creation_date
-      delivery_address
-      amount
-      payment_method
-      contact_number
+  query orders($account: String!, $limit: Int, $status: OrderStatusEnum) {
+    orders(account: $account, limit: $limit, status: $status) {
+      _id
+      affiliate
+      delivery
+      deliveryFee
+      paymentType
+      phonenumber
       status
     }
   }
@@ -88,7 +87,7 @@ const limitSelectOptions = [
 export default function Orders() {
   const [checkedId, setCheckedId] = useState([]);
   const [checked, setChecked] = useState(false);
-
+  const currentWallet = useWalletState("currentWallet");
   const [useCss, theme] = themedUseStyletron();
   const sent = useCss({
     ":before": {
@@ -117,9 +116,12 @@ export default function Orders() {
 
   const [status, setStatus] = useState([]);
   const [limit, setLimit] = useState([]);
-  const [search, setSearch] = useState([]);
+  // const [search, setSearch] = useState([]);
 
-  const { data, error, refetch } = useQuery(GET_ORDERS);
+  const { data, error, refetch } = useQuery(GET_ORDERS, {
+    variables: { account: currentWallet, limit: 7, status: "PENDING" },
+  });
+  console.log(data);
   if (error) {
     return <div>Error! {error.message}</div>;
   }
@@ -149,11 +151,11 @@ export default function Orders() {
       });
     }
   }
-  function handleSearch(event) {
-    const { value } = event.currentTarget;
-    setSearch(value);
-    refetch({ searchText: value });
-  }
+  // function handleSearch(event) {
+  //   const { value } = event.currentTarget;
+  //   setSearch(value);
+  //   refetch({ searchText: value });
+  // }
   function onAllCheck(event) {
     if (event.target.checked) {
       const idx = data && data.orders.map((order) => order.id);
@@ -212,14 +214,14 @@ export default function Orders() {
                   />
                 </Col>
 
-                <Col md={6} xs={12}>
+                {/* <Col md={6} xs={12}>
                   <Input
                     value={search}
                     placeholder="Ex: Search By Address"
                     onChange={handleSearch}
                     clearable
                   />
-                </Col>
+                </Col> */}
               </Row>
             </Col>
           </Header>

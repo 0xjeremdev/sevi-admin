@@ -142,6 +142,7 @@ export default function Products() {
   //   variables: { account },
   // });
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
   const productUpdated = useWalletState("productUpdated");
   const wallet_dispatch = useWalletDispatch();
   const setProductUpdated = useCallback(
@@ -220,9 +221,10 @@ export default function Products() {
     // refetch({ searchKey: "" });
   }
   async function productDelete(p_id) {
+    setLoading(true);
     const res = await deleteProduct({ variables: { id: p_id } });
-    console.log(res);
-    refetch({ searchKey: search });
+    await refetch({ searchKey: search });
+    setLoading(false);
   }
   // console.log(data);
   return (
@@ -273,7 +275,7 @@ export default function Products() {
           </Header>
 
           <Row>
-            {data ? (
+            {data && !productUpdated && !loading ? (
               data.searchProduct && data.searchProduct.hits.length !== 0 ? (
                 data.searchProduct.hits.map((item: any, index: number) => (
                   <Col
