@@ -144,6 +144,7 @@ export default function Products() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const productUpdated = useWalletState("productUpdated");
+  const currentWallet = useWalletState("currentWallet");
   const wallet_dispatch = useWalletDispatch();
   const setProductUpdated = useCallback(
     (flag) => {
@@ -156,7 +157,7 @@ export default function Products() {
   );
 
   const { data, error, refetch, fetchMore } = useQuery(SEARCH_PRODUCT, {
-    variables: { searchKey: search },
+    variables: { searchKey: search, vendorID: currentWallet },
   });
   if (productUpdated) {
     refetch({ searchKey: search }).then(() => {
