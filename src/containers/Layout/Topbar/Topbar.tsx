@@ -69,6 +69,15 @@ const Topbar = ({ refs }: any) => {
   );
   const wallet_data = useQuery(GetWallet, {
     onCompleted: (data) => {
+      const currentWallet = localStorage.getItem("currentWallet");
+      if (currentWallet) {
+        setWallet(currentWallet);
+        return;
+      }
+      localStorage.setItem(
+        "currentWallet",
+        data.walletOverview[0].wallet.account
+      );
       setWallet(data.walletOverview[0].wallet.account);
     },
   });
@@ -80,6 +89,7 @@ const Topbar = ({ refs }: any) => {
     });
   }
   const handleWalletAccount = ({ value }) => {
+    localStorage.setItem("currentWallet", value[0].value);
     setWallet(value[0].value);
   };
   const dispatch = useDrawerDispatch();
