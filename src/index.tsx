@@ -31,12 +31,13 @@ const authLink = setContext(async (_, { headers }) => {
   // get the authentication token from local storage if it exists
   const token = await localStorage.getItem("myAuthToken");
   // console.log("auth-tokeh:", token);
-
+  const currentWallet = localStorage.getItem("currentWallet");
   // return the headers to the context so httpLink can read them
   return {
     headers: {
       ...headers,
       Authorization: token ? token : "",
+      account: currentWallet ? currentWallet : "",
     },
   };
 });
