@@ -87,26 +87,18 @@ const priceSelectOptions = [
 const SEARCH_PRODUCT = gql`
   query(
     $searchKey: String
-    $lon: Float
-    $lat: Float
-    $distanceInKM: Int
     $scrollId: String
-    $primary: String
     $vendorID: String
   ) {
     searchProduct(
       input: {
         searchKey: $searchKey
-        location: { lon: $lon, lat: $lat }
-        distanceInKM: $distanceInKM
         scrollId: $scrollId
-        categories: { primary: $primary }
         vendorID: $vendorID
       }
     ) {
       hits {
         _id
-        picture
         name
         description
         price
