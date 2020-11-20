@@ -163,7 +163,13 @@ export default function Products() {
       setProductUpdated(false);
     });
   }
-  const [deleteProduct] = useMutation(DELETE_PRODUCT);
+  const [deleteProduct] = useMutation(DELETE_PRODUCT, {
+    onCompleted: () => {
+      refetch({ searchKey: search }).then(() => {
+        setLoading(false);
+      });
+    },
+  });
   // const [loadingMore, toggleLoading] = useState(false);
   // const [type, setType] = useState([]);
   // const [priceOrder, setPriceOrder] = useState([]);
@@ -220,13 +226,11 @@ export default function Products() {
     setSearch(value);
     // refetch({ searchKey: "" });
   }
-  async function productDelete(p_id) {
+  function productDelete(p_id) {
     setLoading(true);
-    const res = await deleteProduct({ variables: { id: p_id } });
-    await refetch({ searchKey: search });
-    setLoading(false);
+    deleteProduct({ variables: { id: p_id } });
   }
-  // console.log(data);
+  console.log(data);
   return (
     <Grid fluid={true}>
       <Row>
