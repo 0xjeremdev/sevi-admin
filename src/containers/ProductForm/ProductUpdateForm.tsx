@@ -86,7 +86,6 @@ const UPDATE_PRODUCT = gql`
       }
     ) {
       _id
-      picture
       name
       description
       price

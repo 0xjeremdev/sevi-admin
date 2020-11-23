@@ -18,15 +18,29 @@ import {
 import NoResult from "components/NoResult/NoResult";
 
 const GET_ORDERS = gql`
-  query orders($account: String!, $limit: Int, $status: OrderStatusEnum) {
-    orders(account: $account, limit: $limit, status: $status) {
+  query($limit: Int, $status: OrderStatusEnum) {
+    orders(limit: $limit, status: $status) {
       _id
-      affiliate
-      delivery
-      deliveryFee
       paymentType
       phonenumber
       status
+      delivery {
+        address
+      }
+      userDetails {
+        _id
+        profile {
+          name
+          documentID
+          countrycode
+        }
+      }
+      products {
+        created
+        quantity
+        price
+        description
+      }
     }
   }
 `;
@@ -73,10 +87,10 @@ const Row = withStyle(Rows, () => ({
 }));
 
 const statusSelectOptions = [
-  { value: "delivered", label: "Delivered" },
-  { value: "pending", label: "Pending" },
-  { value: "processing", label: "Processing" },
-  { value: "failed", label: "Failed" },
+  { value: "DELIVERED", label: "Delivered" },
+  { value: "PENDING", label: "Pending" },
+  { value: "COMPLETED", label: "Completed" },
+  { value: "CANCELLED", label: "Cancelled" },
 ];
 const limitSelectOptions = [
   { value: 7, label: "Last 7 orders" },
@@ -118,9 +132,7 @@ export default function Orders() {
   const [limit, setLimit] = useState([]);
   // const [search, setSearch] = useState([]);
 
-  const { data, error, refetch } = useQuery(GET_ORDERS, {
-    variables: { account: currentWallet, limit: 7, status: "PENDING" },
-  });
+  const { data, error, refetch } = useQuery(GET_ORDERS);
   console.log(data);
   if (error) {
     return <div>Error! {error.message}</div>;
@@ -158,7 +170,7 @@ export default function Orders() {
   // }
   function onAllCheck(event) {
     if (event.target.checked) {
-      const idx = data && data.orders.map((order) => order.id);
+      const idx = data && data.orders.map((order) => order._id);
       setCheckedId(idx);
     } else {
       setCheckedId([]);
@@ -262,59 +274,61 @@ export default function Orders() {
 
                 {data ? (
                   data.orders.length ? (
-                    data.orders
-                      .map((item) => Object.values(item))
-                      .map((row, index) => (
-                        <React.Fragment key={index}>
-                          <StyledCell>
-                            <Checkbox
-                              name={row[1]}
-                              checked={checkedId.includes(row[1])}
-                              onChange={handleCheckbox}
-                              overrides={{
-                                Checkmark: {
-                                  style: {
-                                    borderTopWidth: "2px",
-                                    borderRightWidth: "2px",
-                                    borderBottomWidth: "2px",
-                                    borderLeftWidth: "2px",
-                                    borderTopLeftRadius: "4px",
-                                    borderTopRightRadius: "4px",
-                                    borderBottomRightRadius: "4px",
-                                    borderBottomLeftRadius: "4px",
-                                  },
+                    data.orders.map((item, index) => (
+                      <React.Fragment key={index}>
+                        <StyledCell>
+                          <Checkbox
+                            name={item._id}
+                            checked={checkedId.includes(item._id)}
+                            onChange={handleCheckbox}
+                            overrides={{
+                              Checkmark: {
+                                style: {
+                                  borderTopWidth: "2px",
+                                  borderRightWidth: "2px",
+                                  borderBottomWidth: "2px",
+                                  borderLeftWidth: "2px",
+                                  borderTopLeftRadius: "4px",
+                                  borderTopRightRadius: "4px",
+                                  borderBottomRightRadius: "4px",
+                                  borderBottomLeftRadius: "4px",
                                 },
-                              }}
-                            />
-                          </StyledCell>
-                          <StyledCell>{row[1]}</StyledCell>
-                          <StyledCell>{row[2]}</StyledCell>
-                          <StyledCell>
-                            {dayjs(row[3]).format("DD MMM YYYY")}
-                          </StyledCell>
-                          <StyledCell>{row[4]}</StyledCell>
-                          <StyledCell>${row[5]}</StyledCell>
-                          <StyledCell>{row[6]}</StyledCell>
-                          <StyledCell>{row[7]}</StyledCell>
-                          <StyledCell style={{ justifyContent: "center" }}>
-                            <Status
-                              className={
-                                row[8].toLowerCase() === "delivered"
-                                  ? sent
-                                  : row[8].toLowerCase() === "pending"
-                                  ? paid
-                                  : row[8].toLowerCase() === "processing"
-                                  ? processing
-                                  : row[8].toLowerCase() === "failed"
-                                  ? failed
-                                  : ""
-                              }
-                            >
-                              {row[8]}
-                            </Status>
-                          </StyledCell>
-                        </React.Fragment>
-                      ))
+                              },
+                            }}
+                          />
+                        </StyledCell>
+                        <StyledCell>{item._id}</StyledCell>
+                        <StyledCell>{item.userDetails._id}</StyledCell>
+                        <StyledCell>
+                          {dayjs(item.products[0].created).format(
+                            "DD MMM YYYY"
+                          )}
+                        </StyledCell>
+                        <StyledCell>{item.delivery.address}</StyledCell>
+                        <StyledCell>
+                          ${item.products[0].price * item.products[0].quantity}
+                        </StyledCell>
+                        <StyledCell>{item.paymentType}</StyledCell>
+                        <StyledCell>{item.phonenumber}</StyledCell>
+                        <StyledCell style={{ justifyContent: "center" }}>
+                          <Status
+                            className={
+                              item.status.toLowerCase() === "delivered"
+                                ? sent
+                                : item.status.toLowerCase() === "pending"
+                                ? paid
+                                : item.status.toLowerCase() === "processing"
+                                ? processing
+                                : item.status.toLowerCase() === "failed"
+                                ? failed
+                                : ""
+                            }
+                          >
+                            {item.status}
+                          </Status>
+                        </StyledCell>
+                      </React.Fragment>
+                    ))
                   ) : (
                     <NoResult
                       hideButton={false}
