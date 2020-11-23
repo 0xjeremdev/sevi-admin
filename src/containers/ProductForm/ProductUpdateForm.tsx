@@ -9,9 +9,13 @@ import DrawerBox from "components/DrawerBox/DrawerBox";
 import { Row, Col } from "components/FlexBox/FlexBox";
 import Input from "components/Input/Input";
 import { Textarea } from "components/Textarea/Textarea";
-import { useWalletState } from "context/WalletContext";
+import { useWalletState, useWalletDispatch } from "context/WalletContext";
+import Checkbox from "components/CheckBox/CheckBox";
 import Select from "components/Select/Select";
 import { FormFields, FormLabel } from "components/FormFields/FormFields";
+import axios from "axios";
+import Url from "url-parse";
+import { InLineLoader } from "components/InlineLoader/InlineLoader";
 
 import {
   Form,
@@ -35,36 +39,65 @@ const options = [
 ];
 
 const typeOptions = [
-  { value: "grocery", name: "Grocery", id: "1" },
-  { value: "women-cloths", name: "Women Cloths", id: "2" },
-  { value: "bags", name: "Bags", id: "3" },
-  { value: "makeup", name: "Makeup", id: "4" },
+  { value: "NEW_PRODUCT", name: "NEW_PRODUCT", id: "1" },
+  { value: "SERVICE", name: "SERVICE", id: "2" },
+  { value: "USED_PRODUCT", name: "USED_PRODUCT", id: "3" },
 ];
 
 const UPDATE_PRODUCT = gql`
   mutation updateProduct(
     $account: String!
     $id: String!
-    $picture: String!
     $name: String!
+    $sending: Boolean!
+    $pickup: Boolean!
+    $barter: Boolean!
+    $digital: Boolean!
+    $renting: Boolean!
+    $credit: Boolean!
+    $gallery: [ProductGalleryInput!]!
     $description: String!
     $price: Int!
+    $primaryCatagory: String!
+    $subCategory: String!
+    $type: ListingTypeEnum!
   ) {
     updateProduct(
       account: $account
       id: $id
       input: {
-        picture: $picture
         name: $name
         description: $description
+        exchange: {
+          sending: $sending
+          renting: $renting
+          pickup: $pickup
+          barter: $barter
+          digital: $digital
+          credit: $credit
+        }
+        gallery: $gallery
         price: $price
+        categories: {
+          type: $type
+          primary: $primaryCatagory
+          subCategory: $subCategory
+        }
       }
     ) {
       _id
-      picture
       name
       description
       price
+    }
+  }
+`;
+const CREATE_PRESIGNED_POST = gql`
+  mutation($type: UploadTypeEnum!, $account: String) {
+    createPreSignedPost(type: $type, account: $account) {
+      data
+      key
+      url
     }
   }
 `;
@@ -74,55 +107,120 @@ const AddProduct: React.FC<Props> = () => {
   const dispatch = useDrawerDispatch();
   const data = useDrawerState("data");
   const currentWallet = useWalletState("currentWallet");
+  const wallet_dispatch = useWalletDispatch();
+  const [loading, setLoading] = useState(false);
+  const setProductUpdated = useCallback(
+    (flag) => {
+      wallet_dispatch({
+        type: "PRODUCT_UPDATED",
+        data: flag,
+      });
+    },
+    [wallet_dispatch]
+  );
   //===================================================
   const closeDrawer = useCallback(() => dispatch({ type: "CLOSE_DRAWER" }), [
     dispatch,
   ]);
   const { register, handleSubmit, setValue } = useForm({
-    defaultValues: data,
+    defaultValues: {
+      name: data.name,
+      price: data.price,
+      description: data.description,
+      type: data.category ? data.category.primary : "NEW_PRODUCT",
+      primary: data.category ? data.category.primary : "",
+      subCategory: data.category ? data.subCategory : "",
+    },
   });
-  const [type, setType] = useState([{ value: data.type }]);
-  const [tag, setTag] = useState([]);
+  const [checkboxs, setCheckBox] = useState({
+    barter: data.exchange.barter,
+    sending: data.exchange.sending,
+    pickup: data.exchange.pickup,
+    digital: data.exchange.digital,
+  });
+  const [type, setType] = useState([
+    { value: data.category ? data.category.type : "NEW_PRODUCT" },
+  ]);
   const [description, setDescription] = useState(data.description);
+  const [getURL] = useMutation(CREATE_PRESIGNED_POST);
   React.useEffect(() => {
-    // register({ name: "type" });
-    // register({ name: "categories" });
     register({ name: "picture" });
-    register({ name: "description" });
-    // register({ name: "_id" });
-    // register({ name: "__typename" });
+    register({ name: "type", required: true });
+    register({ name: "description", required: true });
   }, [register]);
 
-  const handleMultiChange = ({ value }) => {
-    setValue("categories", value);
-    setTag(value);
-  };
   const handleDescriptionChange = (e) => {
     const value = e.target.value;
     setValue("description", value);
     setDescription(value);
   };
-
+  const handleChecbox = (e) => {
+    let nextCheckboxs = { ...checkboxs };
+    nextCheckboxs[e.currentTarget.name] = e.currentTarget.checked;
+    setCheckBox(nextCheckboxs);
+    setValue(e.currentTarget.name, e.currentTarget.checked);
+  };
   const handleTypeChange = ({ value }) => {
-    setValue("type", value);
+    setValue("type", value.length > 0 ? value[0].value : "");
     setType(value);
   };
-  const handleUploader = (files) => {
-    setValue("picture", files[0].path);
+  async function startUpload(file: File, presignedUrl: string, key: string) {
+    const send = await axios({
+      method: "PUT",
+      url: presignedUrl,
+      data: file,
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (send.status == 200) return "good";
+    else return "bad";
+  }
+  const handleUploader = async (files) => {
+    const file = files[0];
+    const presignedUrl = await getURL({
+      variables: {
+        type: "PRODUCT",
+        account: currentWallet,
+        imageName: file.name,
+        imageType: file.type,
+      },
+    });
+    const sendNow = await startUpload(
+      file,
+      presignedUrl.data.createPreSignedPost.url,
+      presignedUrl.data.createPreSignedPost.key
+    );
+    if (sendNow != "good") return;
+    var url = new Url(presignedUrl.data.createPreSignedPost.url);
+    setValue("picture", `${url.origin}${url.pathname}`);
   };
   const [updateProductHandler] = useMutation(UPDATE_PRODUCT);
-  const onSubmit = (updated_data) => {
+  const onSubmit = async (updated_data) => {
     const new_data = { ...data, ...updated_data };
-    updateProductHandler({
+    setLoading(true);
+    const result = await updateProductHandler({
       variables: {
         account: currentWallet,
         id: new_data._id,
-        picture: new_data.picture,
         name: new_data.name,
         description: new_data.description,
         price: Number(new_data.price),
+        sending: checkboxs.sending,
+        pickup: checkboxs.pickup,
+        barter: checkboxs.barter,
+        digital: checkboxs.digital,
+        renting: true,
+        credit: true,
+        gallery:
+          new_data.picture == null || new_data.picture == ""
+            ? []
+            : [{ url: new_data.picture }],
+        primaryCatagory: new_data.primary,
+        type: new_data.type,
+        subCategory: new_data.subCategory,
       },
     });
+    setLoading(false);
+    setProductUpdated(true);
     closeDrawer();
   };
 
@@ -131,235 +229,281 @@ const AddProduct: React.FC<Props> = () => {
       <DrawerTitleWrapper>
         <DrawerTitle>Update Product</DrawerTitle>
       </DrawerTitleWrapper>
-
-      <Form
-        onSubmit={handleSubmit(onSubmit)}
-        style={{ height: "100%" }}
-        noValidate
-      >
-        <Scrollbars
-          autoHide
-          renderView={(props) => (
-            <div {...props} style={{ ...props.style, overflowX: "hidden" }} />
-          )}
-          renderTrackHorizontal={(props) => (
-            <div
-              {...props}
-              style={{ display: "none" }}
-              className="track-horizontal"
-            />
-          )}
+      {loading ? (
+        <InLineLoader />
+      ) : (
+        <Form
+          onSubmit={handleSubmit(onSubmit)}
+          style={{ height: "100%" }}
+          noValidate
         >
-          <Row>
-            <Col lg={4}>
-              <FieldDetails>Upload your Product image here</FieldDetails>
-            </Col>
-            <Col lg={8}>
-              <DrawerBox>
-                <Uploader onChange={handleUploader} imageURL={data.picture} />
-              </DrawerBox>
-            </Col>
-          </Row>
-
-          <Row>
-            <Col lg={4}>
-              <FieldDetails>
-                Add your Product description and necessary information from here
-              </FieldDetails>
-            </Col>
-
-            <Col lg={8}>
-              <DrawerBox>
-                <FormFields>
-                  <FormLabel>Name</FormLabel>
-                  <Input
-                    inputRef={register({ required: true, maxLength: 20 })}
-                    name="name"
+          <Scrollbars
+            autoHide
+            renderView={(props) => (
+              <div {...props} style={{ ...props.style, overflowX: "hidden" }} />
+            )}
+            renderTrackHorizontal={(props) => (
+              <div
+                {...props}
+                style={{ display: "none" }}
+                className="track-horizontal"
+              />
+            )}
+          >
+            <Row>
+              <Col lg={4}>
+                <FieldDetails>Upload your Product image here</FieldDetails>
+              </Col>
+              <Col lg={8}>
+                <DrawerBox>
+                  <Uploader
+                    onChange={handleUploader}
+                    imageURL={
+                      data.gallery.length > 0 ? data.gallery[0].url : null
+                    }
                   />
-                </FormFields>
+                </DrawerBox>
+              </Col>
+            </Row>
 
-                <FormFields>
-                  <FormLabel>Description</FormLabel>
-                  <Textarea
-                    value={description}
-                    onChange={handleDescriptionChange}
-                  />
-                </FormFields>
+            <Row>
+              <Col lg={4}>
+                <FieldDetails>
+                  Add your Product description and necessary information from
+                  here
+                </FieldDetails>
+              </Col>
 
-                {/* <FormFields>
-                  <FormLabel>Unit</FormLabel>
-                  <Input type="text" inputRef={register} name="unit" />
-                </FormFields> */}
+              <Col lg={8}>
+                <DrawerBox>
+                  <FormFields>
+                    <FormLabel>Name</FormLabel>
+                    <Input
+                      inputRef={register({ required: true, maxLength: 20 })}
+                      name="name"
+                    />
+                  </FormFields>
 
-                <FormFields>
-                  <FormLabel>Price</FormLabel>
-                  <Input
-                    type="number"
-                    inputRef={register({ required: true })}
-                    name="price"
-                  />
-                </FormFields>
-
-                {/* <FormFields>
-                  <FormLabel>Sale Price</FormLabel>
-                  <Input type="number" inputRef={register} name="salePrice" />
-                </FormFields> */}
-
-                {/* <FormFields>
-                  <FormLabel>Discount In Percent</FormLabel>
-                  <Input
-                    type="number"
-                    inputRef={register}
-                    name="discountInPercent"
-                  />
-                </FormFields> */}
-
-                {/* <FormFields>
-                  <FormLabel>Product Quantity</FormLabel>
-                  <Input type="number" inputRef={register} name="quantity" />
-                </FormFields> */}
-
-                {/* <FormFields>
-                  <FormLabel>Type</FormLabel>
-                  <Select
-                    options={typeOptions}
-                    labelKey="name"
-                    valueKey="value"
-                    placeholder="Product Type"
-                    value={type}
-                    searchable={false}
-                    onChange={handleTypeChange}
-                    overrides={{
-                      Placeholder: {
-                        style: ({ $theme }) => {
-                          return {
-                            ...$theme.typography.fontBold14,
-                            color: $theme.colors.textNormal,
-                          };
+                  <FormFields>
+                    <FormLabel>Description</FormLabel>
+                    <Textarea
+                      value={description}
+                      name="description"
+                      onChange={handleDescriptionChange}
+                    />
+                  </FormFields>
+                  <FormFields>
+                    <FormLabel>Price</FormLabel>
+                    <Input
+                      type="number"
+                      inputRef={register({ required: true })}
+                      name="price"
+                    />
+                  </FormFields>
+                  <FormFields>
+                    <FormLabel>Type</FormLabel>
+                    <Select
+                      options={typeOptions}
+                      labelKey="name"
+                      valueKey="value"
+                      placeholder="Product Type"
+                      value={type}
+                      onChange={handleTypeChange}
+                      searchable={false}
+                      overrides={{
+                        Placeholder: {
+                          style: ({ $theme }) => {
+                            return {
+                              ...$theme.typography.fontBold14,
+                              color: $theme.colors.textNormal,
+                            };
+                          },
                         },
-                      },
-                      DropdownListItem: {
-                        style: ({ $theme }) => {
-                          return {
-                            ...$theme.typography.fontBold14,
-                            color: $theme.colors.textNormal,
-                          };
+                        DropdownListItem: {
+                          style: ({ $theme }) => {
+                            return {
+                              ...$theme.typography.fontBold14,
+                              color: $theme.colors.textNormal,
+                            };
+                          },
                         },
-                      },
-                      OptionContent: {
-                        style: ({ $theme, $selected }) => {
-                          return {
-                            ...$theme.typography.fontBold14,
-                            color: $selected
-                              ? $theme.colors.textDark
-                              : $theme.colors.textNormal,
-                          };
+                        OptionContent: {
+                          style: ({ $theme, $selected }) => {
+                            return {
+                              ...$theme.typography.fontBold14,
+                              color: $selected
+                                ? $theme.colors.textDark
+                                : $theme.colors.textNormal,
+                            };
+                          },
                         },
-                      },
-                      SingleValue: {
-                        style: ({ $theme }) => {
-                          return {
-                            ...$theme.typography.fontBold14,
-                            color: $theme.colors.textNormal,
-                          };
+                        SingleValue: {
+                          style: ({ $theme }) => {
+                            return {
+                              ...$theme.typography.fontBold14,
+                              color: $theme.colors.textNormal,
+                            };
+                          },
                         },
-                      },
-                      Popover: {
-                        props: {
-                          overrides: {
-                            Body: {
-                              style: { zIndex: 5 },
+                        Popover: {
+                          props: {
+                            overrides: {
+                              Body: {
+                                style: { zIndex: 5 },
+                              },
                             },
                           },
                         },
-                      },
-                    }}
-                  />
-                </FormFields> */}
-
-                {/* <FormFields>
-                  <FormLabel>Categories</FormLabel>
-                  <Select
-                    options={options}
-                    labelKey="name"
-                    valueKey="value"
-                    placeholder="Product Tag"
-                    value={tag}
-                    onChange={handleMultiChange}
-                    overrides={{
-                      Placeholder: {
-                        style: ({ $theme }) => {
-                          return {
-                            ...$theme.typography.fontBold14,
-                            color: $theme.colors.textNormal,
-                          };
-                        },
-                      },
-                      DropdownListItem: {
-                        style: ({ $theme }) => {
-                          return {
-                            ...$theme.typography.fontBold14,
-                            color: $theme.colors.textNormal,
-                          };
-                        },
-                      },
-                      Popover: {
-                        props: {
-                          overrides: {
-                            Body: {
-                              style: { zIndex: 5 },
-                            },
+                      }}
+                    />
+                  </FormFields>
+                  <FormFields>
+                    <FormLabel>Category Primary</FormLabel>
+                    <Input
+                      inputRef={register({ required: true, maxLength: 20 })}
+                      name="primary"
+                    />
+                  </FormFields>
+                  <FormFields>
+                    <FormLabel>Category SubCategory</FormLabel>
+                    <Input
+                      inputRef={register({ required: true, maxLength: 20 })}
+                      name="subCategory"
+                    />
+                  </FormFields>
+                  <FormFields>
+                    <FormLabel>Exchange Barter</FormLabel>
+                    <Checkbox
+                      name="barter"
+                      checked={checkboxs.barter}
+                      onChange={handleChecbox}
+                      overrides={{
+                        Checkmark: {
+                          style: {
+                            borderTopWidth: "2px",
+                            borderRightWidth: "2px",
+                            borderBottomWidth: "2px",
+                            borderLeftWidth: "2px",
+                            borderTopLeftRadius: "4px",
+                            borderTopRightRadius: "4px",
+                            borderBottomRightRadius: "4px",
+                            borderBottomLeftRadius: "4px",
                           },
                         },
-                      },
-                    }}
-                    multi
-                  />
-                </FormFields> */}
-              </DrawerBox>
-            </Col>
-          </Row>
-        </Scrollbars>
+                      }}
+                    />
+                  </FormFields>
+                  <FormFields>
+                    <FormLabel>Exchange Sending</FormLabel>
+                    <Checkbox
+                      name="sending"
+                      checked={checkboxs.sending}
+                      onChange={handleChecbox}
+                      overrides={{
+                        Checkmark: {
+                          style: {
+                            borderTopWidth: "2px",
+                            borderRightWidth: "2px",
+                            borderBottomWidth: "2px",
+                            borderLeftWidth: "2px",
+                            borderTopLeftRadius: "4px",
+                            borderTopRightRadius: "4px",
+                            borderBottomRightRadius: "4px",
+                            borderBottomLeftRadius: "4px",
+                          },
+                        },
+                      }}
+                    />
+                  </FormFields>
+                  <FormFields>
+                    <FormLabel>Exchange Pickup</FormLabel>
+                    <Checkbox
+                      name="pickup"
+                      checked={checkboxs.pickup}
+                      onChange={handleChecbox}
+                      overrides={{
+                        Checkmark: {
+                          style: {
+                            borderTopWidth: "2px",
+                            borderRightWidth: "2px",
+                            borderBottomWidth: "2px",
+                            borderLeftWidth: "2px",
+                            borderTopLeftRadius: "4px",
+                            borderTopRightRadius: "4px",
+                            borderBottomRightRadius: "4px",
+                            borderBottomLeftRadius: "4px",
+                          },
+                        },
+                      }}
+                    />
+                  </FormFields>
+                  <FormFields>
+                    <FormLabel>Exchange Digital</FormLabel>
+                    <Checkbox
+                      name="digital"
+                      checked={checkboxs.digital}
+                      onChange={handleChecbox}
+                      overrides={{
+                        Checkmark: {
+                          style: {
+                            borderTopWidth: "2px",
+                            borderRightWidth: "2px",
+                            borderBottomWidth: "2px",
+                            borderLeftWidth: "2px",
+                            borderTopLeftRadius: "4px",
+                            borderTopRightRadius: "4px",
+                            borderBottomRightRadius: "4px",
+                            borderBottomLeftRadius: "4px",
+                          },
+                        },
+                      }}
+                    />
+                  </FormFields>
+                </DrawerBox>
+              </Col>
+            </Row>
+          </Scrollbars>
 
-        <ButtonGroup>
-          <Button
-            kind={KIND.minimal}
-            onClick={closeDrawer}
-            overrides={{
-              BaseButton: {
-                style: ({ $theme }) => ({
-                  width: "50%",
-                  borderTopLeftRadius: "3px",
-                  borderTopRightRadius: "3px",
-                  borderBottomRightRadius: "3px",
-                  borderBottomLeftRadius: "3px",
-                  marginRight: "15px",
-                  color: $theme.colors.red400,
-                }),
-              },
-            }}
-          >
-            Cancel
-          </Button>
+          <ButtonGroup>
+            <Button
+              kind={KIND.minimal}
+              onClick={closeDrawer}
+              overrides={{
+                BaseButton: {
+                  style: ({ $theme }) => ({
+                    width: "50%",
+                    borderTopLeftRadius: "3px",
+                    borderTopRightRadius: "3px",
+                    borderBottomRightRadius: "3px",
+                    borderBottomLeftRadius: "3px",
+                    marginRight: "15px",
+                    color: $theme.colors.red400,
+                  }),
+                },
+              }}
+            >
+              Cancel
+            </Button>
 
-          <Button
-            type="submit"
-            overrides={{
-              BaseButton: {
-                style: ({ $theme }) => ({
-                  width: "50%",
-                  borderTopLeftRadius: "3px",
-                  borderTopRightRadius: "3px",
-                  borderBottomRightRadius: "3px",
-                  borderBottomLeftRadius: "3px",
-                }),
-              },
-            }}
-          >
-            Update Product
-          </Button>
-        </ButtonGroup>
-      </Form>
+            <Button
+              type="submit"
+              overrides={{
+                BaseButton: {
+                  style: ({ $theme }) => ({
+                    width: "50%",
+                    borderTopLeftRadius: "3px",
+                    borderTopRightRadius: "3px",
+                    borderBottomRightRadius: "3px",
+                    borderBottomLeftRadius: "3px",
+                  }),
+                },
+              }}
+            >
+              Update Product
+            </Button>
+          </ButtonGroup>
+        </Form>
+      )}
     </>
   );
 };

@@ -1,16 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { styled, withStyle } from "baseui";
 import Button from "components/Button/Button";
 import { Grid, Row as Rows, Col as Column } from "components/FlexBox/FlexBox";
 import Input from "components/Input/Input";
 import Select from "components/Select/Select";
-import { useQuery, gql } from "@apollo/client";
+import { useQuery, gql, useMutation } from "@apollo/client";
 import { Header, Heading } from "components/Wrapper.style";
 import Fade from "react-reveal/Fade";
 import ProductCard from "components/ProductCard/ProductCard";
 import NoResult from "components/NoResult/NoResult";
 import { CURRENCY } from "settings/constants";
 import Placeholder from "components/Placeholder/Placeholder";
+import { useWalletDispatch, useWalletState } from "context/WalletContext";
 
 export const ProductsRow = styled("div", ({ $theme }) => ({
   display: "flex",
@@ -86,54 +87,81 @@ const priceSelectOptions = [
 const SEARCH_PRODUCT = gql`
   query(
     $searchKey: String
-    $lon: Float
-    $lat: Float
-    $distanceInKM: Int
     $scrollId: String
-    $primary: String
     $vendorID: String
   ) {
     searchProduct(
       input: {
         searchKey: $searchKey
-        location: { lon: $lon, lat: $lat }
-        distanceInKM: $distanceInKM
         scrollId: $scrollId
-        categories: { primary: $primary }
         vendorID: $vendorID
       }
     ) {
       hits {
         _id
-        picture
-        created
         name
         description
-        vendorID
-        vendorName
-        vendorType
-        location {
-          lat
-          lon
+        price
+        exchange {
+          sending
+          pickup
+          barter
+          digital
+        }
+        gallery {
+          url
         }
         category {
+          type
           primary
+          subCategory
         }
-        price
       }
       total
       scroll
     }
   }
 `;
-
+const DELETE_PRODUCT = gql`
+  mutation deleteProduct($id: String!) {
+    deleteProduct(id: $id) {
+      _id
+    }
+  }
+`;
 export default function Products() {
   // const { data, error, refetch, fetchMore } = useQuery(GET_PRODUCTS, {
   //   variables: { account },
   // });
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
+  const productUpdated = useWalletState("productUpdated");
+  const currentWallet = useWalletState("currentWallet");
+  const wallet_dispatch = useWalletDispatch();
+  const setProductUpdated = useCallback(
+    (flag) => {
+      wallet_dispatch({
+        type: "PRODUCT_UPDATED",
+        data: flag,
+      });
+    },
+    [wallet_dispatch]
+  );
+
   const { data, error, refetch, fetchMore } = useQuery(SEARCH_PRODUCT, {
-    variables: { searchKey: search },
+    variables: { searchKey: search, vendorID: currentWallet },
+  });
+  if (productUpdated) {
+    refetch({ searchKey: search }).then(() => {
+      setProductUpdated(false);
+    });
+  }
+  const [deleteProduct] = useMutation(DELETE_PRODUCT, {
+    onCompleted: () => {
+      refetch({ searchKey: search }).then(() => {
+        setLoading(false);
+      });
+    },
   });
   // const [loadingMore, toggleLoading] = useState(false);
   // const [type, setType] = useState([]);
@@ -191,7 +219,11 @@ export default function Products() {
     setSearch(value);
     // refetch({ searchKey: "" });
   }
-  // console.log(data);
+  function productDelete(p_id) {
+    setLoading(true);
+    deleteProduct({ variables: { id: p_id } });
+  }
+  console.log(data);
   return (
     <Grid fluid={true}>
       <Row>
@@ -240,7 +272,7 @@ export default function Products() {
           </Header>
 
           <Row>
-            {data ? (
+            {data && !productUpdated && !loading ? (
               data.searchProduct && data.searchProduct.hits.length !== 0 ? (
                 data.searchProduct.hits.map((item: any, index: number) => (
                   <Col
@@ -255,11 +287,14 @@ export default function Products() {
                       <ProductCard
                         title={item.name}
                         weight={item.unit}
-                        image={item.picture}
+                        image={
+                          item.gallery.length > 0 ? item.gallery[0].url : null
+                        }
                         currency={CURRENCY}
                         price={item.price}
                         salePrice={item.price}
                         discountInPercent={item.discountInPercent}
+                        onDelete={productDelete}
                         data={item}
                       />
                     </Fade>
