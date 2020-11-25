@@ -38,6 +38,10 @@ export const StyledCell = withStyle(BaseStyledCell, () => ({
   overflow: "hidden",
   alignSelf: "center",
 }));
+export const CenteredBodyCell = withStyle(BaseStyledCell, () => ({
+  display: "flex",
+  alignItems: "center",
+}));
 
 export const StyledHeadCellCenter = withStyle(BaseStyledHeadCell, () => ({
   fontFamily: "'Lato', sans-serif",
