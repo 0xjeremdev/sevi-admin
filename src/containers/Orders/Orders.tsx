@@ -3,8 +3,7 @@ import { styled, withStyle, createThemedUseStyletron } from "baseui";
 import dayjs from "dayjs";
 import { Grid, Row as Rows, Col as Column } from "components/FlexBox/FlexBox";
 import Select from "components/Select/Select";
-import Input from "components/Input/Input";
-import { useWalletState, useWalletDispatch } from "context/WalletContext";
+// import { useWalletState } from "context/WalletContext";
 import { useQuery, gql } from "@apollo/client";
 import { Wrapper, Header, Heading } from "components/Wrapper.style";
 import Checkbox from "components/CheckBox/CheckBox";
@@ -101,7 +100,7 @@ const limitSelectOptions = [
 export default function Orders() {
   const [checkedId, setCheckedId] = useState([]);
   const [checked, setChecked] = useState(false);
-  const currentWallet = useWalletState("currentWallet");
+  // const currentWallet = useWalletState("currentWallet");
   const [useCss, theme] = themedUseStyletron();
   const sent = useCss({
     ":before": {

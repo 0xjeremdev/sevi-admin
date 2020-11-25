@@ -1,12 +1,12 @@
-import React, { useContext, useState, useEffect } from "react";
-import { Redirect, useHistory, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+// import { Redirect } from "react-router-dom";
 import {
   Formik,
   Form,
   //  Field
 } from "formik";
 import * as Yup from "yup";
-import { AuthContext } from "context/auth";
+// import { AuthContext } from "context/auth";
 import {
   FormFields,
   // FormLabel,
@@ -20,12 +20,10 @@ import {
   LogoWrapper,
   QRWrapper,
 } from "./Login.style";
-import Input from "components/Input/Input";
-// import Button from "components/Button/Button";
 import Logoimage from "assets/image/PickBazar.png";
 
 import QRCode from "qrcode.react";
-import { useSubscription, gql, useMutation } from "@apollo/client";
+import { useSubscription, gql } from "@apollo/client";
 import { v4 as uuidv4 } from "uuid";
 
 const initialValues = {
@@ -45,15 +43,15 @@ const getLoginValidationSchema = () => {
 // };
 
 export default () => {
-  let history = useHistory();
-  let location = useLocation();
-  const { authenticate, isAuthenticated } = useContext(AuthContext);
-  if (isAuthenticated) return <Redirect to={{ pathname: "/" }} />;
+  // let history = useHistory();
+  // let location = useLocation();
+  // const { authenticate, isAuthenticated } = useContext(AuthContext);
+  // if (isAuthenticated) return <Redirect to={{ pathname: "/" }} />;
 
-  let { from } = (location.state as any) || { from: { pathname: "/" } };
+  // let { from } = (location.state as any) || { from: { pathname: "/" } };
   // let sessionToken = localStorage.getItem("myAuthToken");
 
-  const [difficultKey, setDifficultKey] = useState(uuidv4());
+  const [difficultKey] = useState(uuidv4());
   // // const [isToken, setIsToken] = useState(sessionToken);
 
   console.log("difficultKey:", difficultKey);
@@ -71,7 +69,7 @@ export default () => {
     }
   `;
 
-  const { data, loading, error } = useSubscription(GET_JWT, {
+  const { data, error } = useSubscription(GET_JWT, {
     variables: {
       qrkey: difficultKey,
     },
@@ -85,19 +83,19 @@ export default () => {
     if (data) {
       console.log("data:", data);
 
-      authenticate(
-        { username: "", password: "", authToken: data.getMyToken.jwt },
-        () => {
-          history.replace(from);
-        }
-      );
+      // authenticate(
+      //   { username: "", password: "", authToken: data.getMyToken.jwt },
+      //   () => {
+      //     history.replace(from);
+      //   }
+      // );
     }
   }, [data]);
 
   let login = ({ username, password }) => {
-    authenticate({ username, password, authToken: "" }, () => {
-      history.replace(from);
-    });
+    // authenticate({ username, password, authToken: "" }, () => {
+    //   history.replace(from);
+    // });
   };
 
   return (

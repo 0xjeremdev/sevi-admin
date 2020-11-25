@@ -1,5 +1,4 @@
 import React from "react";
-import { Delete } from "baseui/icon";
 import {
   ProductCardWrapper,
   ProductImageWrapper,
@@ -16,7 +15,7 @@ import {
   DiscountedPrice,
 } from "./ProductCard.style";
 import { useDrawerDispatch } from "context/DrawerContext";
-import Button, { SHAPE } from "components/Button/Button";
+import Button from "components/Button/Button";
 
 type ProductCardProps = {
   title: string;

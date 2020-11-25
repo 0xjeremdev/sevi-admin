@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
-import { v4 as uuidv4 } from "uuid";
 import { useMutation, gql } from "@apollo/client";
 import { Scrollbars } from "react-custom-scrollbars";
 import { useDrawerDispatch } from "context/DrawerContext";
@@ -25,20 +24,19 @@ import {
   FieldDetails,
   ButtonGroup,
 } from "../DrawerItems/DrawerItems.style";
-import { send } from "process";
 
-const options = [
-  { value: "Fruits & Vegetables", name: "Fruits & Vegetables", id: "1" },
-  { value: "Meat & Fish", name: "Meat & Fish", id: "2" },
-  { value: "Purse", name: "Purse", id: "3" },
-  { value: "Hand bags", name: "Hand bags", id: "4" },
-  { value: "Shoulder bags", name: "Shoulder bags", id: "5" },
-  { value: "Wallet", name: "Wallet", id: "6" },
-  { value: "Laptop bags", name: "Laptop bags", id: "7" },
-  { value: "Women Dress", name: "Women Dress", id: "8" },
-  { value: "Outer Wear", name: "Outer Wear", id: "9" },
-  { value: "Pants", name: "Pants", id: "10" },
-];
+// const options = [
+//   { value: "Fruits & Vegetables", name: "Fruits & Vegetables", id: "1" },
+//   { value: "Meat & Fish", name: "Meat & Fish", id: "2" },
+//   { value: "Purse", name: "Purse", id: "3" },
+//   { value: "Hand bags", name: "Hand bags", id: "4" },
+//   { value: "Shoulder bags", name: "Shoulder bags", id: "5" },
+//   { value: "Wallet", name: "Wallet", id: "6" },
+//   { value: "Laptop bags", name: "Laptop bags", id: "7" },
+//   { value: "Women Dress", name: "Women Dress", id: "8" },
+//   { value: "Outer Wear", name: "Outer Wear", id: "9" },
+//   { value: "Pants", name: "Pants", id: "10" },
+// ];
 
 const typeOptions = [
   { value: "NEW_PRODUCT", name: "NEW_PRODUCT", id: "1" },
@@ -46,34 +44,35 @@ const typeOptions = [
   { value: "USED_PRODUCT", name: "USED_PRODUCT", id: "3" },
 ];
 
-const GET_PRODUCTS = gql`
-  query getProducts(
-    $type: String
-    $sortByPrice: String
-    $searchText: String
-    $offset: Int
-  ) {
-    products(
-      type: $type
-      sortByPrice: $sortByPrice
-      searchText: $searchText
-      offset: $offset
-    ) {
-      items {
-        id
-        name
-        image
-        type
-        price
-        unit
-        salePrice
-        discountInPercent
-      }
-      totalCount
-      hasMore
-    }
-  }
-`;
+// const GET_PRODUCTS = gql`
+//   query getProducts(
+//     $type: String
+//     $sortByPrice: String
+//     $searchText: String
+//     $offset: Int
+//   ) {
+//     products(
+//       type: $type
+//       sortByPrice: $sortByPrice
+//       searchText: $searchText
+//       offset: $offset
+//     ) {
+//       items {
+//         id
+//         name
+//         image
+//         type
+//         price
+//         unit
+//         salePrice
+//         discountInPercent
+//       }
+//       totalCount
+//       hasMore
+//     }
+//   }
+// `;
+
 const CREATE_PRODUCT = gql`
   mutation(
     $account: String!
@@ -190,7 +189,7 @@ const AddProduct: React.FC<Props> = (props) => {
       data: file,
       headers: { "Content-Type": "multipart/form-data" },
     });
-    if (send.status == 200) return "good";
+    if (send.status === 200) return "good";
     else return "bad";
   }
   const handleTypeChange = ({ value }) => {
@@ -218,7 +217,7 @@ const AddProduct: React.FC<Props> = (props) => {
       presignedUrl.data.createPreSignedPost.url,
       presignedUrl.data.createPreSignedPost.key
     );
-    if (sendNow != "good") return;
+    if (sendNow !== "good") return;
     var url = new Url(presignedUrl.data.createPreSignedPost.url);
     setValue("picture", `${url.origin}${url.pathname}`);
   };
@@ -237,7 +236,7 @@ const AddProduct: React.FC<Props> = (props) => {
         renting: true,
         credit: true,
         gallery:
-          data.picture == null || data.picture == ""
+          data.picture === null || data.picture === ""
             ? []
             : [{ url: data.picture }],
         primaryCatagory: data.primary,
