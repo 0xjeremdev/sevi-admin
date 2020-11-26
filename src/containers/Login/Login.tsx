@@ -9,9 +9,7 @@ import * as Yup from "yup";
 import { AuthContext } from "context/auth";
 import {
   FormFields,
-  // FormLabel,
   FormTitle,
-  // Error,
 } from "components/FormFields/FormFields";
 import {
   Wrapper,
@@ -20,8 +18,6 @@ import {
   LogoWrapper,
   QRWrapper,
 } from "./Login.style";
-import Input from "components/Input/Input";
-// import Button from "components/Button/Button";
 import Logoimage from "assets/image/PickBazar.png";
 
 import QRCode from "qrcode.react";
