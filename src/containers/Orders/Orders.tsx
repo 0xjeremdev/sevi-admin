@@ -149,7 +149,7 @@ function TableRow(data: any) {
   const [useCss, theme] = themedUseStyletron();
   const [expanded, setExpanded] = React.useState(false);
   const drawerDispatch = useDrawerDispatch();
-  console.log(data);
+  // console.log(data);
   const openDrawer = React.useCallback(() => {
     drawerDispatch({
       type: "OPEN_DRAWER",
@@ -286,8 +286,8 @@ function TableRow(data: any) {
 }
 
 export default function Orders() {
-  const [checkedId, setCheckedId] = useState([]);
-  const [checked, setChecked] = useState(false);
+  // const [checkedId, setCheckedId] = useState([]);
+  // const [checked, setChecked] = useState(false);
   const [status, setStatus] = useState([]);
   const [limit, setLimit] = useState([]);
   // const [search, setSearch] = useState([]);
@@ -329,25 +329,26 @@ export default function Orders() {
   //   setSearch(value);
   //   refetch({ searchText: value });
   // }
-  function onAllCheck(event) {
-    if (event.target.checked) {
-      const idx = data && data.orders.map((order) => order._id);
-      setCheckedId(idx);
-    } else {
-      setCheckedId([]);
-    }
-    setChecked(event.target.checked);
-  }
+  // function onAllCheck(event) {
+  //   if (event.target.checked) {
+  //     const idx = data && data.orders.map((order) => order._id);
+  //     setCheckedId(idx);
+  //   } else {
+  //     setCheckedId([]);
+  //   }
+  //   setChecked(event.target.checked);
+  // }
 
-  function handleCheckbox(event) {
-    const { name } = event.currentTarget;
-    if (!checkedId.includes(name)) {
-      setCheckedId((prevState) => [...prevState, name]);
-    } else {
-      setCheckedId((prevState) => prevState.filter((id) => id !== name));
-    }
-  }
+  // function handleCheckbox(event) {
+  //   const { name } = event.currentTarget;
+  //   if (!checkedId.includes(name)) {
+  //     setCheckedId((prevState) => [...prevState, name]);
+  //   } else {
+  //     setCheckedId((prevState) => prevState.filter((id) => id !== name));
+  //   }
+  // }
 
+  // console.log(checked)
   return (
     <Grid fluid={true}>
       <Row>
