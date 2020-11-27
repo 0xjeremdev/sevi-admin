@@ -20,12 +20,12 @@ import {
   LogoWrapper,
   QRWrapper,
 } from "./Login.style";
-import Input from "components/Input/Input";
+// import Input from "components/Input/Input";
 // import Button from "components/Button/Button";
 import Logoimage from "assets/image/PickBazar.png";
 
 import QRCode from "qrcode.react";
-import { useSubscription, gql, useMutation } from "@apollo/client";
+import { useSubscription, gql } from "@apollo/client";
 import { v4 as uuidv4 } from "uuid";
 
 const initialValues = {
@@ -53,10 +53,8 @@ export default () => {
   let { from } = (location.state as any) || { from: { pathname: "/" } };
   // let sessionToken = localStorage.getItem("myAuthToken");
 
-  const [difficultKey, setDifficultKey] = useState(uuidv4());
+  const [difficultKey] = useState(uuidv4());
   // // const [isToken, setIsToken] = useState(sessionToken);
-
-  console.log("difficultKey:", difficultKey);
 
   const QRcontent = {
     key: difficultKey,
@@ -71,7 +69,7 @@ export default () => {
     }
   `;
 
-  const { data, loading, error } = useSubscription(GET_JWT, {
+  const { data, error } = useSubscription(GET_JWT, {
     variables: {
       qrkey: difficultKey,
     },
@@ -83,8 +81,6 @@ export default () => {
 
   useEffect(() => {
     if (data) {
-      console.log("data:", data);
-
       authenticate(
         { username: "", password: "", authToken: data.getMyToken.jwt },
         () => {
@@ -92,7 +88,7 @@ export default () => {
         }
       );
     }
-  }, [data]);
+  }, [data, authenticate, history, from]);
 
   let login = ({ username, password }) => {
     authenticate({ username, password, authToken: "" }, () => {

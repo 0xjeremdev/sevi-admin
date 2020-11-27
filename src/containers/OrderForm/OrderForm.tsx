@@ -3,14 +3,11 @@ import { useForm } from "react-hook-form";
 import { useMutation, gql } from "@apollo/client";
 import { Scrollbars } from "react-custom-scrollbars";
 import { useDrawerDispatch, useDrawerState } from "context/DrawerContext";
-import Uploader from "components/Uploader/Uploader";
 import Button, { KIND } from "components/Button/Button";
 import DrawerBox from "components/DrawerBox/DrawerBox";
 import { Row, Col } from "components/FlexBox/FlexBox";
-import Input from "components/Input/Input";
 import { Textarea } from "components/Textarea/Textarea";
-import { useWalletState, useWalletDispatch } from "context/WalletContext";
-import Checkbox from "components/CheckBox/CheckBox";
+import { useWalletDispatch } from "context/WalletContext";
 import Select from "components/Select/Select";
 import { FormFields, FormLabel } from "components/FormFields/FormFields";
 import { InLineLoader } from "components/InlineLoader/InlineLoader";
@@ -62,7 +59,6 @@ const UpdateOrder: React.FC<Props> = () => {
   const closeDrawer = useCallback(() => dispatch({ type: "CLOSE_DRAWER" }), [
     dispatch,
   ]);
-  console.log(data.status.toUpperCase());
   const { register, handleSubmit, setValue } = useForm({
     defaultValues: {
       description: data.description,
@@ -90,12 +86,11 @@ const UpdateOrder: React.FC<Props> = () => {
     setValue("type", value.length > 0 ? value[0].value : "");
     setStatus(value);
   };
-  console.log(data);
   const [updateOrderHandler] = useMutation(UPDATE_ORDER);
   const onSubmit = async (updated_data) => {
     const new_data = { ...data, ...updated_data };
     setLoading(true);
-    const result = await updateOrderHandler({
+    await updateOrderHandler({
       variables: {
         id: new_data._id,
         description: new_data.description,
@@ -103,7 +98,7 @@ const UpdateOrder: React.FC<Props> = () => {
       },
     });
     setLoading(false);
-    // setOrderUpdated(true);
+    setOrderUpdated(true);
     closeDrawer();
   };
 

@@ -9,8 +9,8 @@ import ReactJson from "react-json-view";
 import dayjs from "dayjs";
 import { Grid, Row as Rows, Col as Column } from "components/FlexBox/FlexBox";
 import Select from "components/Select/Select";
-import Input from "components/Input/Input";
-import { useWalletState, useWalletDispatch } from "context/WalletContext";
+// import Input from "components/Input/Input";
+// import { useWalletState, useWalletDispatch } from "context/WalletContext";
 import { useQuery, gql } from "@apollo/client";
 import { Wrapper, Header, Heading } from "components/Wrapper.style";
 import Checkbox from "components/CheckBox/CheckBox";
@@ -150,14 +150,13 @@ function TableRow(data: any) {
   const [useCss, theme] = themedUseStyletron();
   const [expanded, setExpanded] = React.useState(false);
   const drawerDispatch = useDrawerDispatch();
-  console.log(data);
   const openDrawer = React.useCallback(() => {
     drawerDispatch({
       type: "OPEN_DRAWER",
       drawerComponent: "ORDER_UPDATE_FORM",
       data: data.data,
     });
-  }, [drawerDispatch]);
+  }, [drawerDispatch, data]);
   const completed = useCss({
     ":before": {
       content: '""',
@@ -287,14 +286,13 @@ function TableRow(data: any) {
 }
 
 export default function Orders() {
-  const [checkedId, setCheckedId] = useState([]);
-  const [checked, setChecked] = useState(false);
+  // const [checkedId, setCheckedId] = useState([]);
+  // const [checked, setChecked] = useState(false);
   const [status, setStatus] = useState([]);
   const [limit, setLimit] = useState([]);
   // const [search, setSearch] = useState([]);
 
   const { data, error, refetch } = useQuery(GET_ORDERS);
-  console.log(data);
   if (error) {
     return <div>Error! {error.message}</div>;
   }
@@ -330,24 +328,24 @@ export default function Orders() {
   //   setSearch(value);
   //   refetch({ searchText: value });
   // }
-  function onAllCheck(event) {
-    if (event.target.checked) {
-      const idx = data && data.orders.map((order) => order._id);
-      setCheckedId(idx);
-    } else {
-      setCheckedId([]);
-    }
-    setChecked(event.target.checked);
-  }
+  // function onAllCheck(event) {
+  //   if (event.target.checked) {
+  //     const idx = data && data.orders.map((order) => order._id);
+  //     setCheckedId(idx);
+  //   } else {
+  //     setCheckedId([]);
+  //   }
+  //   setChecked(event.target.checked);
+  // }
 
-  function handleCheckbox(event) {
-    const { name } = event.currentTarget;
-    if (!checkedId.includes(name)) {
-      setCheckedId((prevState) => [...prevState, name]);
-    } else {
-      setCheckedId((prevState) => prevState.filter((id) => id !== name));
-    }
-  }
+  // function handleCheckbox(event) {
+  //   const { name } = event.currentTarget;
+  //   if (!checkedId.includes(name)) {
+  //     setCheckedId((prevState) => [...prevState, name]);
+  //   } else {
+  //     setCheckedId((prevState) => prevState.filter((id) => id !== name));
+  //   }
+  // }
 
   return (
     <Grid fluid={true}>

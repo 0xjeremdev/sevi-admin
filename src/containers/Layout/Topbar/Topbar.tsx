@@ -88,6 +88,7 @@ const Topbar = ({ refs }: any) => {
       return { value: item.wallet.account, label: item.name };
     });
   }
+  console.log(accountOptions);
   const handleWalletAccount = ({ value }) => {
     localStorage.setItem("currentWallet", value[0].value);
     setWallet(value[0].value);
