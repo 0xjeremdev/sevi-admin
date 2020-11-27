@@ -271,7 +271,7 @@ function TableRow(data: any) {
                 <ReactJson
                   src={data.data}
                   iconStyle="triangle"
-                  collapsed={true}
+                  collapsed={false}
                   enableClipboard={false}
                   displayDataTypes={false}
                   displayObjectSize={false}

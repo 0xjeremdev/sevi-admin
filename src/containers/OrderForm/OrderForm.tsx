@@ -88,7 +88,7 @@ const UpdateOrder: React.FC<Props> = () => {
   ]);
   const { register, handleSubmit, setValue } = useForm({
     defaultValues: {
-      description: data.description,
+      notes: data.notes ? data.notes : "",
       status: data.status ? data.status.toUpperCase() : "PENDING",
     },
   });
@@ -96,7 +96,7 @@ const UpdateOrder: React.FC<Props> = () => {
   const [status, setStatus] = useState([
     { value: data.status ? data.status.toUpperCase() : "PENDING" },
   ]);
-  const [notes, setNotes] = useState(data.notes);
+  const [notes, setNotes] = useState(data.notes ? data.notes : "");
 
   React.useEffect(() => {
     register({ name: "status", required: true });
@@ -110,7 +110,7 @@ const UpdateOrder: React.FC<Props> = () => {
   };
 
   const handleStatusChange = ({ value }) => {
-    setValue("type", value.length > 0 ? value[0].value : "");
+    setValue("status", value.length > 0 ? value[0].value : "");
     setStatus(value);
   };
   const [updateOrderHandler] = useMutation(UPDATE_ORDER);
