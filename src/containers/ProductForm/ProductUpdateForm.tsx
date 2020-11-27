@@ -25,19 +25,6 @@ import {
   ButtonGroup,
 } from "../DrawerItems/DrawerItems.style";
 
-const options = [
-  { value: "Fruits & Vegetables", name: "Fruits & Vegetables", id: "1" },
-  { value: "Meat & Fish", name: "Meat & Fish", id: "2" },
-  { value: "Purse", name: "Purse", id: "3" },
-  { value: "Hand bags", name: "Hand bags", id: "4" },
-  { value: "Shoulder bags", name: "Shoulder bags", id: "5" },
-  { value: "Wallet", name: "Wallet", id: "6" },
-  { value: "Laptop bags", name: "Laptop bags", id: "7" },
-  { value: "Women Dress", name: "Women Dress", id: "8" },
-  { value: "Outer Wear", name: "Outer Wear", id: "9" },
-  { value: "Pants", name: "Pants", id: "10" },
-];
-
 const typeOptions = [
   { value: "NEW_PRODUCT", name: "NEW_PRODUCT", id: "1" },
   { value: "SERVICE", name: "SERVICE", id: "2" },
@@ -171,7 +158,7 @@ const AddProduct: React.FC<Props> = () => {
       data: file,
       headers: { "Content-Type": "multipart/form-data" },
     });
-    if (send.status == 200) return "good";
+    if (send.status === 200) return "good";
     else return "bad";
   }
   const handleUploader = async (files) => {
@@ -189,7 +176,7 @@ const AddProduct: React.FC<Props> = () => {
       presignedUrl.data.createPreSignedPost.url,
       presignedUrl.data.createPreSignedPost.key
     );
-    if (sendNow != "good") return;
+    if (sendNow !== "good") return;
     var url = new Url(presignedUrl.data.createPreSignedPost.url);
     setValue("picture", `${url.origin}${url.pathname}`);
   };
@@ -197,7 +184,7 @@ const AddProduct: React.FC<Props> = () => {
   const onSubmit = async (updated_data) => {
     const new_data = { ...data, ...updated_data };
     setLoading(true);
-    const result = await updateProductHandler({
+    await updateProductHandler({
       variables: {
         account: currentWallet,
         id: new_data._id,
@@ -211,7 +198,7 @@ const AddProduct: React.FC<Props> = () => {
         renting: true,
         credit: true,
         gallery:
-          new_data.picture == null || new_data.picture == ""
+          new_data.picture === null || new_data.picture === ""
             ? []
             : [{ url: new_data.picture }],
         primaryCatagory: new_data.primary,
