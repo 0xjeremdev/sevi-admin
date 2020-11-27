@@ -27,14 +27,41 @@ const statusOptions = [
   { value: "CANCELLED", label: "Cancelled", id: "4" },
   { value: "REFUNDED", label: "Refunded", id: "5" },
   { value: "RETURNED", label: "Returned", id: "6" },
+  { value: "ARCHIVED", label: "Archived", id: "7" },
 ];
 
 const UPDATE_ORDER = gql`
-  mutation($id: ID!, $status: OrderStatusEnum!) {
-    updateOrder(input: { id: $id, status: $status }) {
-      _id
+  mutation(
+    $status: OrderStatusEnum!
+    $orderID: ID!
+    $phonenumber: String!
+    $affiliate: String
+    $address: String
+    $deliveryType: DeliveryTypeEnum!
+    $what3words: String
+    $lat: Float
+    $lon: Float
+    $notes: String
+  ) {
+    updateOrder(
+      input: {
+        status: $status
+        orderID: $orderID
+        name: "harry me"
+        notes: $notes
+        phonenumber: $phonenumber
+        affiliate: $affiliate
+        paymentType: SEVI
+        delivery: {
+          address: $address
+          deliveryType: $deliveryType
+          what3words: $what3words
+          location: { lat: $lat, lon: $lon }
+        }
+        products: [{ id: "5fbb9de3aa89fcf4be5234bd", quantity: 5 }]
+      }
+    ) {
       status
-      phonenumber
     }
   }
 `;
@@ -69,17 +96,17 @@ const UpdateOrder: React.FC<Props> = () => {
   const [status, setStatus] = useState([
     { value: data.status ? data.status.toUpperCase() : "PENDING" },
   ]);
-  const [description, setDescription] = useState(data.description);
+  const [notes, setNotes] = useState(data.notes);
 
   React.useEffect(() => {
     register({ name: "status", required: true });
-    register({ name: "description", required: true });
+    register({ name: "notes", required: true });
   }, [register]);
 
-  const handleDescriptionChange = (e) => {
+  const handleNotesChange = (e) => {
     const value = e.target.value;
-    setValue("description", value);
-    setDescription(value);
+    setValue("notes", value);
+    setNotes(value);
   };
 
   const handleStatusChange = ({ value }) => {
@@ -92,9 +119,13 @@ const UpdateOrder: React.FC<Props> = () => {
     setLoading(true);
     await updateOrderHandler({
       variables: {
-        id: new_data._id,
-        description: new_data.description,
+        orderID: new_data._id,
+        notes: new_data.notes,
         status: new_data.status,
+        phonenumber: new_data.phonenumber,
+        address: new_data.delivery.address,
+        deliveryType: new_data.delivery.deliveryType,
+        affiliate: new_data.affiliate._id,
       },
     });
     setLoading(false);
@@ -197,11 +228,11 @@ const UpdateOrder: React.FC<Props> = () => {
                     />
                   </FormFields>
                   <FormFields>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>Notes</FormLabel>
                     <Textarea
-                      value={description}
-                      name="description"
-                      onChange={handleDescriptionChange}
+                      value={notes}
+                      name="notes"
+                      onChange={handleNotesChange}
                     />
                   </FormFields>
                 </DrawerBox>

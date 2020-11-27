@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   styled,
   withStyle,
@@ -10,7 +10,7 @@ import dayjs from "dayjs";
 import { Grid, Row as Rows, Col as Column } from "components/FlexBox/FlexBox";
 import Select from "components/Select/Select";
 // import Input from "components/Input/Input";
-// import { useWalletState, useWalletDispatch } from "context/WalletContext";
+import { useWalletState, useWalletDispatch } from "context/WalletContext";
 import { useQuery, gql } from "@apollo/client";
 import { Wrapper, Header, Heading } from "components/Wrapper.style";
 import Checkbox from "components/CheckBox/CheckBox";
@@ -75,6 +75,7 @@ const GET_ORDERS = gql`
         description
       }
       status
+      notes
       subTotal
       userDetails {
         _id
@@ -239,15 +240,15 @@ function TableRow(data: any) {
               className={
                 data.data.status.toLowerCase() === "completed"
                   ? completed
-                  : data.status.toLowerCase() === "pending"
+                  : data.data.status.toLowerCase() === "pending"
                   ? pending
-                  : data.status.toLowerCase() === "delivered"
+                  : data.data.status.toLowerCase() === "delivered"
                   ? delivered
-                  : data.status.toLowerCase() === "canceled"
+                  : data.data.status.toLowerCase() === "canceled"
                   ? cancelled
-                  : data.status.toLowerCase() === "refunded"
+                  : data.data.status.toLowerCase() === "refunded"
                   ? refunded
-                  : data.status.toLowerCase() === "returned"
+                  : data.data.status.toLowerCase() === "returned"
                   ? returned
                   : ""
               }
@@ -290,13 +291,28 @@ export default function Orders() {
   // const [checked, setChecked] = useState(false);
   const [status, setStatus] = useState([]);
   const [limit, setLimit] = useState([]);
+  const orderUpdated = useWalletState("orderUpdated");
+  const wallet_dispatch = useWalletDispatch();
+  const setOrderUpdated = useCallback(
+    (flag) => {
+      wallet_dispatch({
+        type: "ORDER_UPDATED",
+        data: flag,
+      });
+    },
+    [wallet_dispatch]
+  );
   // const [search, setSearch] = useState([]);
 
   const { data, error, refetch } = useQuery(GET_ORDERS);
   if (error) {
     return <div>Error! {error.message}</div>;
   }
-
+  if (orderUpdated) {
+    refetch().then(() => {
+      setOrderUpdated(false);
+    });
+  }
   function handleStatus({ value }) {
     setStatus(value);
     if (value.length) {
