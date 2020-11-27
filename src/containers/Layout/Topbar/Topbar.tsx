@@ -67,6 +67,15 @@ const Topbar = ({ refs }: any) => {
     },
     [wallet_dispatch]
   );
+  const setOrderUpdated = useCallback(
+    (flag) => {
+      wallet_dispatch({
+        type: "ORDER_UPDATED",
+        data: flag,
+      });
+    },
+    [wallet_dispatch]
+  );
   const wallet_data = useQuery(GetWallet, {
     onCompleted: (data) => {
       const currentWallet = localStorage.getItem("currentWallet");
@@ -88,9 +97,11 @@ const Topbar = ({ refs }: any) => {
       return { value: item.wallet.account, label: item.name };
     });
   }
+
   const handleWalletAccount = ({ value }) => {
     localStorage.setItem("currentWallet", value[0].value);
     setWallet(value[0].value);
+    setOrderUpdated(true);
   };
   const dispatch = useDrawerDispatch();
   const { signout } = React.useContext(AuthContext);
