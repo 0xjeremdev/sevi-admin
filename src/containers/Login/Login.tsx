@@ -9,9 +9,7 @@ import * as Yup from "yup";
 import { AuthContext } from "context/auth";
 import {
   FormFields,
-  // FormLabel,
   FormTitle,
-  // Error,
 } from "components/FormFields/FormFields";
 import {
   Wrapper,
