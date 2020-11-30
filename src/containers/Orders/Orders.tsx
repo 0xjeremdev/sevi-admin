@@ -268,9 +268,30 @@ function TableRow(data: any) {
               <div role="row" className={css({ display: "contents" })}>
                 <StyledCell>
                   <ReactJson
-                    src={data.data}
+                    src={data.data.delivery}
                     iconStyle="triangle"
-                    collapsed={false}
+                    collapsed={true}
+                    name="delivery"
+                    enableClipboard={false}
+                    displayDataTypes={false}
+                    displayObjectSize={false}
+                    indentWidth={6}
+                  />
+                  <ReactJson
+                    src={data.data.groupDetails}
+                    iconStyle="triangle"
+                    name="groupDetails"
+                    collapsed={true}
+                    enableClipboard={false}
+                    displayDataTypes={false}
+                    displayObjectSize={false}
+                    indentWidth={6}
+                  />
+                  <ReactJson
+                    src={data.data.userDetails}
+                    iconStyle="triangle"
+                    name="userDetails"
+                    collapsed={true}
                     enableClipboard={false}
                     displayDataTypes={false}
                     displayObjectSize={false}
