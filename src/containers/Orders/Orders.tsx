@@ -257,31 +257,31 @@ function TableRow(data: any) {
             </Status>
           }
         </StyledCell>
+        {expanded && (
+          <div
+            className={css({
+              gridColumn: "span 9",
+              padding: "32px 24px",
+            })}
+          >
+            <StyledTable $gridTemplateColumns="max-content auto auto auto">
+              <div role="row" className={css({ display: "contents" })}>
+                <StyledCell>
+                  <ReactJson
+                    src={data.data}
+                    iconStyle="triangle"
+                    collapsed={false}
+                    enableClipboard={false}
+                    displayDataTypes={false}
+                    displayObjectSize={false}
+                    indentWidth={6}
+                  />
+                </StyledCell>
+              </div>
+            </StyledTable>
+          </div>
+        )}
       </div>
-      {expanded && (
-        <div
-          className={css({
-            gridColumn: "span 9",
-            padding: "32px 24px",
-          })}
-        >
-          <StyledTable $gridTemplateColumns="max-content auto auto auto">
-            <div role="row" className={css({ display: "contents" })}>
-              <StyledCell>
-                <ReactJson
-                  src={data.data}
-                  iconStyle="triangle"
-                  collapsed={true}
-                  enableClipboard={false}
-                  displayDataTypes={false}
-                  displayObjectSize={false}
-                  indentWidth={6}
-                />
-              </StyledCell>
-            </div>
-          </StyledTable>
-        </div>
-      )}
     </React.Fragment>
   );
 }
