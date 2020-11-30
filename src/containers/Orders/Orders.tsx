@@ -9,6 +9,9 @@ import ReactJson from "react-json-view";
 import dayjs from "dayjs";
 import { Grid, Row as Rows, Col as Column } from "components/FlexBox/FlexBox";
 import Select from "components/Select/Select";
+import ChevronDown from "baseui/icon/chevron-down";
+import ChevronRight from "baseui/icon/chevron-right";
+import { Button } from "baseui/button";
 // import Input from "components/Input/Input";
 import { useWalletState, useWalletDispatch } from "context/WalletContext";
 import { useQuery, gql } from "@apollo/client";
@@ -199,25 +202,14 @@ function TableRow(data: any) {
     <React.Fragment>
       <div role="row" className={css({ display: "contents" })}>
         <StyledCell>
-          <Checkbox
-            name={data.data._id}
-            checked={expanded}
-            onChange={() => setExpanded(!expanded)}
-            overrides={{
-              Checkmark: {
-                style: {
-                  borderTopWidth: "2px",
-                  borderRightWidth: "2px",
-                  borderBottomWidth: "2px",
-                  borderLeftWidth: "2px",
-                  borderTopLeftRadius: "4px",
-                  borderTopRightRadius: "4px",
-                  borderBottomRightRadius: "4px",
-                  borderBottomLeftRadius: "4px",
-                },
-              },
-            }}
-          />
+          <Button
+            size="compact"
+            kind="minimal"
+            onClick={() => setExpanded(!expanded)}
+            shape="square"
+          >
+            {expanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+          </Button>
         </StyledCell>
         <StyledCell onClick={openDrawer}>{data.data._id}</StyledCell>
         <StyledCell onClick={openDrawer}>
@@ -268,9 +260,30 @@ function TableRow(data: any) {
               <div role="row" className={css({ display: "contents" })}>
                 <StyledCell>
                   <ReactJson
-                    src={data.data}
+                    src={data.data.delivery}
                     iconStyle="triangle"
-                    collapsed={false}
+                    collapsed={true}
+                    name="delivery"
+                    enableClipboard={false}
+                    displayDataTypes={false}
+                    displayObjectSize={false}
+                    indentWidth={6}
+                  />
+                  <ReactJson
+                    src={data.data.groupDetails}
+                    iconStyle="triangle"
+                    name="groupDetails"
+                    collapsed={true}
+                    enableClipboard={false}
+                    displayDataTypes={false}
+                    displayObjectSize={false}
+                    indentWidth={6}
+                  />
+                  <ReactJson
+                    src={data.data.userDetails}
+                    iconStyle="triangle"
+                    name="userDetails"
+                    collapsed={true}
                     enableClipboard={false}
                     displayDataTypes={false}
                     displayObjectSize={false}
