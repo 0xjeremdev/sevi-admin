@@ -18,6 +18,7 @@ import { useQuery, gql } from "@apollo/client";
 import { Wrapper, Header, Heading } from "components/Wrapper.style";
 import Checkbox from "components/CheckBox/CheckBox";
 import { useDrawerDispatch } from "context/DrawerContext";
+import { Tag } from "baseui/tag";
 
 import {
   TableWrapper,
@@ -75,6 +76,7 @@ const GET_ORDERS = gql`
         created
         quantity
         price
+        name
         description
       }
       status
@@ -198,6 +200,49 @@ function TableRow(data: any) {
     },
   });
 
+  enum OrderStatusEnum {
+    // Pre-delivery
+    PENDING = "pending", // buyer
+    AWAITING_KYC = "awaiting KYC", // buyer
+    AWAITING_FULFILLMENT = "awaiting fulfillment", // partner
+    CANCELLED = "cancelled", // partner
+
+    // Delivery
+    AWAITING_SHIPMENT = "awaiting shipment", // partner
+    SHIPPED = "shipped", // partner
+    DELIVERED = "delivered", // agent
+
+    // Post-delivery-order
+    REFUNDED = "refunded", // partner
+    DISPUTED = "disputed", // buyer
+    RETURNED = "returned", // buyer
+
+    // Post-delivery-payment
+    DEFAULTED = "defaulted", // buyer did not pay in 90 days.
+    SPECIAL_ATTENTION = "defaulted", // buyer after 14 days to late.
+    LATE_PAY = "late pay", // buyer after 7 days to late.
+    COMPLETED = "completed", // buyer repaid in full.
+    ARCHIVED = "archived", // buyer repaid in full.
+  }
+
+  function statusToTagKind(status: OrderStatusEnum) {
+    switch (status) {
+      case OrderStatusEnum.PENDING: {
+        return "primary";
+      }
+      case OrderStatusEnum.AWAITING_KYC: {
+        return "positive";
+      }
+      case OrderStatusEnum.COMPLETED: {
+        return "negative";
+      }
+      default: {
+        return "neutral";
+      }
+    }
+  }
+
+  console.log(" data.data:", data.data);
   return (
     <React.Fragment>
       <div role="row" className={css({ display: "contents" })}>
@@ -211,7 +256,18 @@ function TableRow(data: any) {
             {expanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
           </Button>
         </StyledCell>
-        <StyledCell onClick={openDrawer}>{data.data._id}</StyledCell>
+        <StyledCell onClick={openDrawer}>
+          {data.data.userDetails.profile.name}
+        </StyledCell>
+        <StyledCell style={{ justifyContent: "center" }} onClick={openDrawer}>
+          <Tag
+            closeable={false}
+            variant="outlined"
+            kind={statusToTagKind(data.data.status)}
+          >
+            {data.data.status}
+          </Tag>
+        </StyledCell>
         <StyledCell onClick={openDrawer}>
           {data.data.userDetails._id}
         </StyledCell>
@@ -226,29 +282,7 @@ function TableRow(data: any) {
         </StyledCell>
         <StyledCell onClick={openDrawer}>{data.data.paymentType}</StyledCell>
         <StyledCell onClick={openDrawer}>{data.data.phonenumber}</StyledCell>
-        <StyledCell style={{ justifyContent: "center" }} onClick={openDrawer}>
-          {
-            <Status
-              className={
-                data.data.status.toLowerCase() === "completed"
-                  ? completed
-                  : data.data.status.toLowerCase() === "pending"
-                  ? pending
-                  : data.data.status.toLowerCase() === "delivered"
-                  ? delivered
-                  : data.data.status.toLowerCase() === "canceled"
-                  ? cancelled
-                  : data.data.status.toLowerCase() === "refunded"
-                  ? refunded
-                  : data.data.status.toLowerCase() === "returned"
-                  ? returned
-                  : ""
-              }
-            >
-              {data.data.status}
-            </Status>
-          }
-        </StyledCell>
+
         {expanded && (
           <div
             className={css({
@@ -259,6 +293,16 @@ function TableRow(data: any) {
             <StyledTable $gridTemplateColumns="max-content auto auto auto">
               <div role="row" className={css({ display: "contents" })}>
                 <StyledCell>
+                  <ReactJson
+                    src={data.data.products}
+                    iconStyle="triangle"
+                    collapsed={true}
+                    name="products"
+                    enableClipboard={false}
+                    displayDataTypes={false}
+                    displayObjectSize={false}
+                    indentWidth={6}
+                  />
                   <ReactJson
                     src={data.data.delivery}
                     iconStyle="triangle"
@@ -451,14 +495,14 @@ export default function Orders() {
                     }}
                   />
                 </StyledHeadCell>
-                <StyledHeadCell>ID</StyledHeadCell>
+                <StyledHeadCell>Name</StyledHeadCell>
+                <StyledHeadCell>Status</StyledHeadCell>
                 <StyledHeadCell>Customer ID</StyledHeadCell>
                 <StyledHeadCell>Time</StyledHeadCell>
                 <StyledHeadCell>Delivery Address</StyledHeadCell>
                 <StyledHeadCell>Amount</StyledHeadCell>
                 <StyledHeadCell>Payment Method</StyledHeadCell>
                 <StyledHeadCell>Contact</StyledHeadCell>
-                <StyledHeadCell>Status</StyledHeadCell>
 
                 {data ? (
                   data.orders.length ? (
