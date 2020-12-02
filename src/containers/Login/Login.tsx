@@ -7,10 +7,7 @@ import {
 } from "formik";
 import * as Yup from "yup";
 import { AuthContext } from "context/auth";
-import {
-  FormFields,
-  FormTitle,
-} from "components/FormFields/FormFields";
+import { FormFields, FormTitle } from "components/FormFields/FormFields";
 import {
   Wrapper,
   FormWrapper,
@@ -20,7 +17,7 @@ import {
 } from "./Login.style";
 // import Input from "components/Input/Input";
 // import Button from "components/Button/Button";
-import Logoimage from "assets/image/PickBazar.png";
+import Logoimage from "assets/image/logo.png";
 
 import QRCode from "qrcode.react";
 import { useSubscription, gql } from "@apollo/client";
@@ -104,7 +101,7 @@ export default () => {
             <Form>
               <FormFields>
                 <LogoWrapper>
-                  <LogoImage src={Logoimage} alt="pickbazar-admin" />
+                  <LogoImage src={Logoimage} alt="sevi-admin" />
                 </LogoWrapper>
                 <FormTitle>Login to admin account</FormTitle>
               </FormFields>

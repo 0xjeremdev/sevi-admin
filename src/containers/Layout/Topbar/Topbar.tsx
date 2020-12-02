@@ -6,7 +6,10 @@ import { useQuery, gql } from "@apollo/client";
 import Select from "components/Select/Select";
 import Notification from "components/Notification/Notification";
 import { AuthContext } from "context/auth";
-import { STAFF_MEMBERS, SETTINGS } from "settings/constants";
+import {
+  // STAFF_MEMBERS,
+  SETTINGS,
+} from "settings/constants";
 import { NotificationIcon } from "assets/icons/NotificationIcon";
 import { AlertDotIcon } from "assets/icons/AlertDotIcon";
 import { ArrowLeftRound } from "assets/icons/ArrowLeftRound";
@@ -28,8 +31,8 @@ import {
   DrawerWrapper,
   SelectWrapper,
 } from "./Topbar.style";
-import Logoimage from "assets/image/PickBazar.png";
-import UserImage from "assets/image/user.jpg";
+import Logoimage from "assets/image/logo.png";
+import UserImage from "assets/image/user.png";
 import { useDrawerDispatch } from "context/DrawerContext";
 import { useWalletDispatch, useWalletState } from "context/WalletContext";
 import Drawer, { ANCHOR } from "components/Drawer/Drawer";
@@ -115,7 +118,7 @@ const Topbar = ({ refs }: any) => {
     <TopbarWrapper ref={refs}>
       <Logo>
         <Link to="/">
-          <LogoImage src={Logoimage} alt="pickbazar-admin" />
+          <LogoImage src={Logoimage} alt="sevi-admin" />
         </Link>
       </Logo>
 
@@ -206,9 +209,9 @@ const Topbar = ({ refs }: any) => {
         <Popover
           content={({ close }) => (
             <UserDropdowItem>
-              <NavLink to={STAFF_MEMBERS} exact={false} onClick={close}>
+              {/* <NavLink to={STAFF_MEMBERS} exact={false} onClick={close}>
                 Staff
-              </NavLink>
+              </NavLink> */}
               <NavLink to={SETTINGS} exact={false} onClick={close}>
                 Settings
               </NavLink>
