@@ -1,8 +1,8 @@
 import React, { useState, useCallback } from "react";
 import {
-  styled,
+  // styled,
   withStyle,
-  createThemedUseStyletron,
+  // createThemedUseStyletron,
   useStyletron,
 } from "baseui";
 import ReactJson from "react-json-view";
@@ -97,29 +97,29 @@ const GET_ORDERS = gql`
 `;
 
 type CustomThemeT = { red400: string; textNormal: string; colors: any };
-const themedUseStyletron = createThemedUseStyletron<CustomThemeT>();
+// const themedUseStyletron = createThemedUseStyletron<CustomThemeT>();
 
-const Status = styled("div", ({ $theme }) => ({
-  ...$theme.typography.fontBold14,
-  color: $theme.colors.textDark,
-  display: "flex",
-  alignItems: "center",
-  lineHeight: "1",
-  textTransform: "capitalize",
+// const Status = styled("div", ({ $theme }) => ({
+//   ...$theme.typography.fontBold14,
+//   color: $theme.colors.textDark,
+//   display: "flex",
+//   alignItems: "center",
+//   lineHeight: "1",
+//   textTransform: "capitalize",
 
-  ":before": {
-    content: '""',
-    width: "10px",
-    height: "10px",
-    display: "inline-block",
-    borderTopLeftRadius: "10px",
-    borderTopRightRadius: "10px",
-    borderBottomRightRadius: "10px",
-    borderBottomLeftRadius: "10px",
-    backgroundColor: $theme.borders.borderE6,
-    marginRight: "10px",
-  },
-}));
+//   ":before": {
+//     content: '""',
+//     width: "10px",
+//     height: "10px",
+//     display: "inline-block",
+//     borderTopLeftRadius: "10px",
+//     borderTopRightRadius: "10px",
+//     borderBottomRightRadius: "10px",
+//     borderBottomLeftRadius: "10px",
+//     backgroundColor: $theme.borders.borderE6,
+//     marginRight: "10px",
+//   },
+// }));
 
 const Col = withStyle(Column, () => ({
   "@media only screen and (max-width: 767px)": {
@@ -153,7 +153,7 @@ const limitSelectOptions = [
 
 function TableRow(data: any) {
   const [css] = useStyletron();
-  const [useCss, theme] = themedUseStyletron();
+  // const [useCss, theme] = themedUseStyletron();
   const [expanded, setExpanded] = React.useState(false);
   const drawerDispatch = useDrawerDispatch();
   const openDrawer = React.useCallback(() => {
@@ -163,42 +163,42 @@ function TableRow(data: any) {
       data: data.data,
     });
   }, [drawerDispatch, data]);
-  const completed = useCss({
-    ":before": {
-      content: '""',
-      backgroundColor: theme.colors.primary,
-    },
-  });
-  const cancelled = useCss({
-    ":before": {
-      content: '""',
-      backgroundColor: theme.colors.red400,
-    },
-  });
-  const pending = useCss({
-    ":before": {
-      content: '""',
-      backgroundColor: theme.colors.textNormal,
-    },
-  });
-  const delivered = useCss({
-    ":before": {
-      content: '""',
-      backgroundColor: theme.colors.blue400,
-    },
-  });
-  const returned = useCss({
-    ":before": {
-      content: '""',
-      backgroundColor: "rgb(100,0,0,)",
-    },
-  });
-  const refunded = useCss({
-    ":before": {
-      content: '""',
-      backgroundColor: "rgb(100,100,0,)",
-    },
-  });
+  // const completed = useCss({
+  //   ":before": {
+  //     content: '""',
+  //     backgroundColor: theme.colors.primary,
+  //   },
+  // });
+  // const cancelled = useCss({
+  //   ":before": {
+  //     content: '""',
+  //     backgroundColor: theme.colors.red400,
+  //   },
+  // });
+  // const pending = useCss({
+  //   ":before": {
+  //     content: '""',
+  //     backgroundColor: theme.colors.textNormal,
+  //   },
+  // });
+  // const delivered = useCss({
+  //   ":before": {
+  //     content: '""',
+  //     backgroundColor: theme.colors.blue400,
+  //   },
+  // });
+  // const returned = useCss({
+  //   ":before": {
+  //     content: '""',
+  //     backgroundColor: "rgb(100,0,0,)",
+  //   },
+  // });
+  // const refunded = useCss({
+  //   ":before": {
+  //     content: '""',
+  //     backgroundColor: "rgb(100,100,0,)",
+  //   },
+  // });
 
   enum OrderStatusEnum {
     // Pre-delivery
