@@ -59,41 +59,10 @@ export const LoaderItem = styled("div", () => ({
   marginBottom: "30px",
 }));
 
-// const GET_PRODUCTS = gql`
-//   query($account: String!) {
-//     findAllProduct(account: $account) {
-//       _id
-//       name
-//       description
-//       picture
-//       price
-//     }
-//   }
-// `;
-
-// const typeSelectOptions = [
-//   { value: "grocery", label: "Grocery" },
-//   { value: "women-cloths", label: "Women Cloths" },
-//   { value: "bags", label: "Bags" },
-//   { value: "makeup", label: "Makeup" },
-// ];
-// const priceSelectOptions = [
-//   { value: "highestToLowest", label: "Highest To Lowest" },
-//   { value: "lowestToHighest", label: "Lowest To Highest" },
-// ];
-
 const SEARCH_PRODUCT = gql`
-  query(
-    $searchKey: String
-    $scrollId: String
-    $vendorID: String
-  ) {
+  query($searchKey: String, $scrollId: String, $vendorID: String) {
     searchProduct(
-      input: {
-        searchKey: $searchKey
-        scrollId: $scrollId
-        vendorID: $vendorID
-      }
+      input: { searchKey: $searchKey, scrollId: $scrollId, vendorID: $vendorID }
     ) {
       hits {
         _id

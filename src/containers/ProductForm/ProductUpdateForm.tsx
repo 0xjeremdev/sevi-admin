@@ -25,73 +25,60 @@ import {
   ButtonGroup,
 } from "../DrawerItems/DrawerItems.style";
 
-// const options = [
-//   { value: "Fruits & Vegetables", name: "Fruits & Vegetables", id: "1" },
-//   { value: "Meat & Fish", name: "Meat & Fish", id: "2" },
-//   { value: "Purse", name: "Purse", id: "3" },
-//   { value: "Hand bags", name: "Hand bags", id: "4" },
-//   { value: "Shoulder bags", name: "Shoulder bags", id: "5" },
-//   { value: "Wallet", name: "Wallet", id: "6" },
-//   { value: "Laptop bags", name: "Laptop bags", id: "7" },
-//   { value: "Women Dress", name: "Women Dress", id: "8" },
-//   { value: "Outer Wear", name: "Outer Wear", id: "9" },
-//   { value: "Pants", name: "Pants", id: "10" },
-// ];
-
 const typeOptions = [
   { value: "NEW_PRODUCT", name: "NEW_PRODUCT", id: "1" },
   { value: "SERVICE", name: "SERVICE", id: "2" },
   { value: "USED_PRODUCT", name: "USED_PRODUCT", id: "3" },
 ];
 
-// const UPDATE_PRODUCT = gql`
-//   mutation updateProduct(
-//     $account: String!
-//     $id: String!
-//     $name: String!
-//     $sending: Boolean!
-//     $pickup: Boolean!
-//     $barter: Boolean!
-//     $digital: Boolean!
-//     $renting: Boolean!
-//     $credit: Boolean!
-//     $gallery: [ProductGalleryInput!]!
-//     $description: String!
-//     $price: Int!
-//     $primaryCatagory: String!
-//     $subCategory: String!
-//     $type: ListingTypeEnum!
-//   ) {
-//     updateProduct(
-//       account: $account
-//       id: $id
-//       input: {
-//         name: $name
-//         description: $description
-//         exchange: {
-//           sending: $sending
-//           renting: $renting
-//           pickup: $pickup
-//           barter: $barter
-//           digital: $digital
-//           credit: $credit
-//         }
-//         gallery: $gallery
-//         price: $price
-//         categories: {
-//           type: $type
-//           primary: $primaryCatagory
-//           subCategory: $subCategory
-//         }
-//       }
-//     ) {
-//       _id
-//       name
-//       description
-//       price
-//     }
-//   }
-// `;
+const UPDATE_PRODUCT = gql`
+  mutation updateProduct(
+    $account: String!
+    $id: String!
+    $name: String!
+    $sending: Boolean!
+    $pickup: Boolean!
+    $barter: Boolean!
+    $digital: Boolean!
+    $renting: Boolean!
+    $credit: Boolean!
+    $gallery: [ProductGalleryInput!]!
+    $description: String!
+    $price: Int!
+    $primaryCatagory: String!
+    $subCategory: String!
+    $type: ListingTypeEnum!
+  ) {
+    updateProduct(
+      account: $account
+      id: $id
+      input: {
+        name: $name
+        description: $description
+        exchange: {
+          sending: $sending
+          renting: $renting
+          pickup: $pickup
+          barter: $barter
+          digital: $digital
+          credit: $credit
+        }
+        gallery: $gallery
+        price: $price
+        categories: {
+          type: $type
+          primary: $primaryCatagory
+          subCategory: $subCategory
+        }
+      }
+    ) {
+      _id
+      name
+      description
+      price
+    }
+  }
+`;
 const CREATE_PRESIGNED_POST = gql`
   mutation($type: UploadTypeEnum!, $account: String) {
     createPreSignedPost(type: $type, account: $account) {
@@ -193,32 +180,32 @@ const AddProduct: React.FC<Props> = () => {
     var url = new Url(presignedUrl.data.createPreSignedPost.url);
     setValue("picture", `${url.origin}${url.pathname}`);
   };
-  // const [updateProductHandler] = useMutation(UPDATE_PRODUCT);
+  const [updateProductHandler] = useMutation(UPDATE_PRODUCT);
   const onSubmit = async (updated_data) => {
-    // const new_data = { ...data, ...updated_data };
+    const new_data = { ...data, ...updated_data };
     setLoading(true);
-    // const result = await updateProductHandler({
-    //   variables: {
-    //     account: currentWallet,
-    //     id: new_data._id,
-    //     name: new_data.name,
-    //     description: new_data.description,
-    //     price: Number(new_data.price),
-    //     sending: checkboxs.sending,
-    //     pickup: checkboxs.pickup,
-    //     barter: checkboxs.barter,
-    //     digital: checkboxs.digital,
-    //     renting: true,
-    //     credit: true,
-    //     gallery:
-    //       new_data.picture == null || new_data.picture == ""
-    //         ? []
-    //         : [{ url: new_data.picture }],
-    //     primaryCatagory: new_data.primary,
-    //     type: new_data.type,
-    //     subCategory: new_data.subCategory,
-    //   },
-    // });
+    await updateProductHandler({
+      variables: {
+        account: currentWallet,
+        id: new_data._id,
+        name: new_data.name,
+        description: new_data.description,
+        price: Number(new_data.price),
+        sending: checkboxs.sending,
+        pickup: checkboxs.pickup,
+        barter: checkboxs.barter,
+        digital: checkboxs.digital,
+        renting: true,
+        credit: true,
+        gallery:
+          new_data.picture === null || new_data.picture === ""
+            ? []
+            : [{ url: new_data.picture }],
+        primaryCatagory: new_data.primary,
+        type: new_data.type,
+        subCategory: new_data.subCategory,
+      },
+    });
     setLoading(false);
     setProductUpdated(true);
     closeDrawer();

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   styled,
   withStyle,
@@ -9,7 +9,11 @@ import ReactJson from "react-json-view";
 import dayjs from "dayjs";
 import { Grid, Row as Rows, Col as Column } from "components/FlexBox/FlexBox";
 import Select from "components/Select/Select";
-// import { useWalletState } from "context/WalletContext";
+import ChevronDown from "baseui/icon/chevron-down";
+import ChevronRight from "baseui/icon/chevron-right";
+import { Button } from "baseui/button";
+// import Input from "components/Input/Input";
+import { useWalletState, useWalletDispatch } from "context/WalletContext";
 import { useQuery, gql } from "@apollo/client";
 import { Wrapper, Header, Heading } from "components/Wrapper.style";
 import Checkbox from "components/CheckBox/CheckBox";
@@ -74,6 +78,7 @@ const GET_ORDERS = gql`
         description
       }
       status
+      notes
       subTotal
       userDetails {
         _id
@@ -149,14 +154,13 @@ function TableRow(data: any) {
   const [useCss, theme] = themedUseStyletron();
   const [expanded, setExpanded] = React.useState(false);
   const drawerDispatch = useDrawerDispatch();
-  // console.log(data);
   const openDrawer = React.useCallback(() => {
     drawerDispatch({
       type: "OPEN_DRAWER",
       drawerComponent: "ORDER_UPDATE_FORM",
       data: data.data,
     });
-  }, [drawerDispatch]);
+  }, [drawerDispatch, data]);
   const completed = useCss({
     ":before": {
       content: '""',
@@ -198,25 +202,14 @@ function TableRow(data: any) {
     <React.Fragment>
       <div role="row" className={css({ display: "contents" })}>
         <StyledCell>
-          <Checkbox
-            name={data.data._id}
-            checked={expanded}
-            onChange={() => setExpanded(!expanded)}
-            overrides={{
-              Checkmark: {
-                style: {
-                  borderTopWidth: "2px",
-                  borderRightWidth: "2px",
-                  borderBottomWidth: "2px",
-                  borderLeftWidth: "2px",
-                  borderTopLeftRadius: "4px",
-                  borderTopRightRadius: "4px",
-                  borderBottomRightRadius: "4px",
-                  borderBottomLeftRadius: "4px",
-                },
-              },
-            }}
-          />
+          <Button
+            size="compact"
+            kind="minimal"
+            onClick={() => setExpanded(!expanded)}
+            shape="square"
+          >
+            {expanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+          </Button>
         </StyledCell>
         <StyledCell onClick={openDrawer}>{data.data._id}</StyledCell>
         <StyledCell onClick={openDrawer}>
@@ -239,15 +232,15 @@ function TableRow(data: any) {
               className={
                 data.data.status.toLowerCase() === "completed"
                   ? completed
-                  : data.status.toLowerCase() === "pending"
+                  : data.data.status.toLowerCase() === "pending"
                   ? pending
-                  : data.status.toLowerCase() === "delivered"
+                  : data.data.status.toLowerCase() === "delivered"
                   ? delivered
-                  : data.status.toLowerCase() === "canceled"
+                  : data.data.status.toLowerCase() === "canceled"
                   ? cancelled
-                  : data.status.toLowerCase() === "refunded"
+                  : data.data.status.toLowerCase() === "refunded"
                   ? refunded
-                  : data.status.toLowerCase() === "returned"
+                  : data.data.status.toLowerCase() === "returned"
                   ? returned
                   : ""
               }
@@ -256,31 +249,52 @@ function TableRow(data: any) {
             </Status>
           }
         </StyledCell>
+        {expanded && (
+          <div
+            className={css({
+              gridColumn: "span 9",
+              padding: "32px 24px",
+            })}
+          >
+            <StyledTable $gridTemplateColumns="max-content auto auto auto">
+              <div role="row" className={css({ display: "contents" })}>
+                <StyledCell>
+                  <ReactJson
+                    src={data.data.delivery}
+                    iconStyle="triangle"
+                    collapsed={true}
+                    name="delivery"
+                    enableClipboard={false}
+                    displayDataTypes={false}
+                    displayObjectSize={false}
+                    indentWidth={6}
+                  />
+                  <ReactJson
+                    src={data.data.groupDetails}
+                    iconStyle="triangle"
+                    name="groupDetails"
+                    collapsed={true}
+                    enableClipboard={false}
+                    displayDataTypes={false}
+                    displayObjectSize={false}
+                    indentWidth={6}
+                  />
+                  <ReactJson
+                    src={data.data.userDetails}
+                    iconStyle="triangle"
+                    name="userDetails"
+                    collapsed={true}
+                    enableClipboard={false}
+                    displayDataTypes={false}
+                    displayObjectSize={false}
+                    indentWidth={6}
+                  />
+                </StyledCell>
+              </div>
+            </StyledTable>
+          </div>
+        )}
       </div>
-      {expanded && (
-        <div
-          className={css({
-            gridColumn: "span 9",
-            padding: "32px 24px",
-          })}
-        >
-          <StyledTable $gridTemplateColumns="max-content auto auto auto">
-            <div role="row" className={css({ display: "contents" })}>
-              <StyledCell>
-                <ReactJson
-                  src={data.data}
-                  iconStyle="triangle"
-                  collapsed={true}
-                  enableClipboard={false}
-                  displayDataTypes={false}
-                  displayObjectSize={false}
-                  indentWidth={6}
-                />
-              </StyledCell>
-            </div>
-          </StyledTable>
-        </div>
-      )}
     </React.Fragment>
   );
 }
@@ -290,14 +304,28 @@ export default function Orders() {
   // const [checked, setChecked] = useState(false);
   const [status, setStatus] = useState([]);
   const [limit, setLimit] = useState([]);
+  const orderUpdated = useWalletState("orderUpdated");
+  const wallet_dispatch = useWalletDispatch();
+  const setOrderUpdated = useCallback(
+    (flag) => {
+      wallet_dispatch({
+        type: "ORDER_UPDATED",
+        data: flag,
+      });
+    },
+    [wallet_dispatch]
+  );
   // const [search, setSearch] = useState([]);
 
   const { data, error, refetch } = useQuery(GET_ORDERS);
-  console.log(data);
   if (error) {
     return <div>Error! {error.message}</div>;
   }
-
+  if (orderUpdated) {
+    refetch().then(() => {
+      setOrderUpdated(false);
+    });
+  }
   function handleStatus({ value }) {
     setStatus(value);
     if (value.length) {
@@ -348,7 +376,6 @@ export default function Orders() {
   //   }
   // }
 
-  // console.log(checked)
   return (
     <Grid fluid={true}>
       <Row>

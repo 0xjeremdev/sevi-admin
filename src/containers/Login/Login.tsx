@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
-// import { Redirect } from "react-router-dom";
+import React, { useContext, useState, useEffect } from "react";
+import { Redirect, useHistory, useLocation } from "react-router-dom";
 import {
   Formik,
   Form,
   //  Field
 } from "formik";
 import * as Yup from "yup";
-// import { AuthContext } from "context/auth";
+import { AuthContext } from "context/auth";
 import {
   FormFields,
   FormTitle,
@@ -18,6 +18,8 @@ import {
   LogoWrapper,
   QRWrapper,
 } from "./Login.style";
+// import Input from "components/Input/Input";
+// import Button from "components/Button/Button";
 import Logoimage from "assets/image/PickBazar.png";
 
 import QRCode from "qrcode.react";
@@ -41,18 +43,16 @@ const getLoginValidationSchema = () => {
 // };
 
 export default () => {
-  // let history = useHistory();
-  // let location = useLocation();
-  // const { authenticate, isAuthenticated } = useContext(AuthContext);
-  // if (isAuthenticated) return <Redirect to={{ pathname: "/" }} />;
+  let history = useHistory();
+  let location = useLocation();
+  const { authenticate, isAuthenticated } = useContext(AuthContext);
+  if (isAuthenticated) return <Redirect to={{ pathname: "/" }} />;
 
-  // let { from } = (location.state as any) || { from: { pathname: "/" } };
+  let { from } = (location.state as any) || { from: { pathname: "/" } };
   // let sessionToken = localStorage.getItem("myAuthToken");
 
   const [difficultKey] = useState(uuidv4());
   // // const [isToken, setIsToken] = useState(sessionToken);
-
-  console.log("difficultKey:", difficultKey);
 
   const QRcontent = {
     key: difficultKey,
@@ -79,21 +79,19 @@ export default () => {
 
   useEffect(() => {
     if (data) {
-      console.log("data:", data);
-
-      // authenticate(
-      //   { username: "", password: "", authToken: data.getMyToken.jwt },
-      //   () => {
-      //     history.replace(from);
-      //   }
-      // );
+      authenticate(
+        { username: "", password: "", authToken: data.getMyToken.jwt },
+        () => {
+          history.replace(from);
+        }
+      );
     }
-  }, [data]);
+  }, [data, authenticate, history, from]);
 
   let login = ({ username, password }) => {
-    // authenticate({ username, password, authToken: "" }, () => {
-    //   history.replace(from);
-    // });
+    authenticate({ username, password, authToken: "" }, () => {
+      history.replace(from);
+    });
   };
 
   return (
@@ -108,7 +106,7 @@ export default () => {
                 <LogoWrapper>
                   <LogoImage src={Logoimage} alt="pickbazar-admin" />
                 </LogoWrapper>
-                <FormTitle>Scan with Sevi to Login to your admin account</FormTitle>
+                <FormTitle>Login to admin account</FormTitle>
               </FormFields>
               {/* <FormFields>
                 <FormLabel>Username</FormLabel>

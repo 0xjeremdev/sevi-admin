@@ -3,14 +3,11 @@ import { useForm } from "react-hook-form";
 import { useMutation, gql } from "@apollo/client";
 import { Scrollbars } from "react-custom-scrollbars";
 import { useDrawerDispatch, useDrawerState } from "context/DrawerContext";
-import Uploader from "components/Uploader/Uploader";
 import Button, { KIND } from "components/Button/Button";
 import DrawerBox from "components/DrawerBox/DrawerBox";
 import { Row, Col } from "components/FlexBox/FlexBox";
-import Input from "components/Input/Input";
 import { Textarea } from "components/Textarea/Textarea";
-import { useWalletState, useWalletDispatch } from "context/WalletContext";
-import Checkbox from "components/CheckBox/CheckBox";
+import { useWalletDispatch } from "context/WalletContext";
 import Select from "components/Select/Select";
 import { FormFields, FormLabel } from "components/FormFields/FormFields";
 import { InLineLoader } from "components/InlineLoader/InlineLoader";
@@ -30,14 +27,41 @@ const statusOptions = [
   { value: "CANCELLED", label: "Cancelled", id: "4" },
   { value: "REFUNDED", label: "Refunded", id: "5" },
   { value: "RETURNED", label: "Returned", id: "6" },
+  { value: "ARCHIVED", label: "Archived", id: "7" },
 ];
 
 const UPDATE_ORDER = gql`
-  mutation($id: ID!, $status: OrderStatusEnum!) {
-    updateOrder(input: { id: $id, status: $status }) {
-      _id
+  mutation(
+    $status: OrderStatusEnum!
+    $orderID: ID!
+    $phonenumber: String!
+    $affiliate: String
+    $address: String
+    $deliveryType: DeliveryTypeEnum!
+    $what3words: String
+    $lat: Float
+    $lon: Float
+    $notes: String
+  ) {
+    updateOrder(
+      input: {
+        status: $status
+        orderID: $orderID
+        name: "harry me"
+        notes: $notes
+        phonenumber: $phonenumber
+        affiliate: $affiliate
+        paymentType: SEVI
+        delivery: {
+          address: $address
+          deliveryType: $deliveryType
+          what3words: $what3words
+          location: { lat: $lat, lon: $lon }
+        }
+        products: [{ id: "5fbb9de3aa89fcf4be5234bd", quantity: 5 }]
+      }
+    ) {
       status
-      phonenumber
     }
   }
 `;
@@ -62,10 +86,9 @@ const UpdateOrder: React.FC<Props> = () => {
   const closeDrawer = useCallback(() => dispatch({ type: "CLOSE_DRAWER" }), [
     dispatch,
   ]);
-  console.log(data.status.toUpperCase());
   const { register, handleSubmit, setValue } = useForm({
     defaultValues: {
-      description: data.description,
+      notes: data.notes ? data.notes : "",
       status: data.status ? data.status.toUpperCase() : "PENDING",
     },
   });
@@ -73,37 +96,40 @@ const UpdateOrder: React.FC<Props> = () => {
   const [status, setStatus] = useState([
     { value: data.status ? data.status.toUpperCase() : "PENDING" },
   ]);
-  const [description, setDescription] = useState(data.description);
+  const [notes, setNotes] = useState(data.notes ? data.notes : "");
 
   React.useEffect(() => {
     register({ name: "status", required: true });
-    register({ name: "description", required: true });
+    register({ name: "notes", required: true });
   }, [register]);
 
-  const handleDescriptionChange = (e) => {
+  const handleNotesChange = (e) => {
     const value = e.target.value;
-    setValue("description", value);
-    setDescription(value);
+    setValue("notes", value);
+    setNotes(value);
   };
 
   const handleStatusChange = ({ value }) => {
-    setValue("type", value.length > 0 ? value[0].value : "");
+    setValue("status", value.length > 0 ? value[0].value : "");
     setStatus(value);
   };
-  console.log(data);
   const [updateOrderHandler] = useMutation(UPDATE_ORDER);
   const onSubmit = async (updated_data) => {
     const new_data = { ...data, ...updated_data };
     setLoading(true);
-    const result = await updateOrderHandler({
+    await updateOrderHandler({
       variables: {
-        id: new_data._id,
-        description: new_data.description,
+        orderID: new_data._id,
+        notes: new_data.notes,
         status: new_data.status,
+        phonenumber: new_data.phonenumber,
+        address: new_data.delivery.address,
+        deliveryType: new_data.delivery.deliveryType,
+        affiliate: new_data.affiliate._id,
       },
     });
     setLoading(false);
-    // setOrderUpdated(true);
+    setOrderUpdated(true);
     closeDrawer();
   };
 
@@ -202,11 +228,11 @@ const UpdateOrder: React.FC<Props> = () => {
                     />
                   </FormFields>
                   <FormFields>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>Notes</FormLabel>
                     <Textarea
-                      value={description}
-                      name="description"
-                      onChange={handleDescriptionChange}
+                      value={notes}
+                      name="notes"
+                      onChange={handleNotesChange}
                     />
                   </FormFields>
                 </DrawerBox>
