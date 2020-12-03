@@ -7,10 +7,7 @@ import {
 } from "formik";
 import * as Yup from "yup";
 import { AuthContext } from "context/auth";
-import {
-  FormFields,
-  FormTitle,
-} from "components/FormFields/FormFields";
+import { FormFields, FormTitle } from "components/FormFields/FormFields";
 import {
   Wrapper,
   FormWrapper,
@@ -72,7 +69,7 @@ export default () => {
       qrkey: difficultKey,
     },
   });
-
+  console.log(difficultKey);
   if (error) {
     console.log("error:", error);
   }

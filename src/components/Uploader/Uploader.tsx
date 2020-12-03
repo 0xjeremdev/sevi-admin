@@ -2,6 +2,12 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { styled } from "baseui";
 import { UploadIcon } from "assets/icons/UploadIcon";
+import { useMutation, gql } from "@apollo/client";
+import { useWalletState } from "context/WalletContext";
+import Url from "url-parse";
+import axios from "axios";
+import Img_Spinner from "assets/image/spinner.gif";
+import __ReactFlexboxGrid from "react-flexbox-grid";
 
 const Text = styled("span", ({ $theme }) => ({
   ...$theme.typography.font14,
@@ -52,10 +58,19 @@ const Thumb = styled("div", ({ $theme }) => ({
   boxSizing: "border-box",
 }));
 
+const Spinner = styled("div", () => ({
+  display: "flex",
+  width: "100%",
+  backgroundPosition: "center",
+  backgroundImage: `url(${Img_Spinner})`,
+  backgroundSize: "150%",
+}));
+
 const thumbInner = {
   display: "flex",
   minWidth: 0,
   overflow: "hidden",
+  justifyContent: "center",
 };
 
 const img = {
@@ -63,44 +78,89 @@ const img = {
   width: "auto",
   height: "100%",
 };
+const CREATE_PRESIGNED_POST = gql`
+  mutation($type: UploadTypeEnum!, $account: String) {
+    createPreSignedPost(type: $type, account: $account) {
+      data
+      key
+      url
+    }
+  }
+`;
 
-function Uploader({ onChange, imageURL }: any) {
+function Uploader({ onChange, imageURL = [] }: any) {
+  const currentWallet = useWalletState("currentWallet");
   const [files, setFiles] = useState(
-    imageURL ? [{ name: "demo", preview: imageURL }] : []
+    imageURL.map((url) => ({ name: "demo", preview: url.url, loading: false }))
   );
+  const [getURL] = useMutation(CREATE_PRESIGNED_POST);
+  async function startUpload(file: File, presignedUrl: string, key: string) {
+    const send = await axios({
+      method: "PUT",
+      url: presignedUrl,
+      data: file,
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (send.status === 200) return "good";
+    else return "bad";
+  }
+  const uploadFile = async (file) => {
+    const presignedUrl = await getURL({
+      variables: {
+        type: "PRODUCT",
+        account: currentWallet,
+        imageName: file.name,
+        imageType: file.type,
+      },
+    });
+    const sendNow = await startUpload(
+      file,
+      presignedUrl.data.createPreSignedPost.url,
+      presignedUrl.data.createPreSignedPost.key
+    );
+    if (sendNow !== "good") return false;
+    var url = new Url(presignedUrl.data.createPreSignedPost.url);
+    return `${url.origin}${url.pathname}`;
+  };
+  const handleAcceptedfiles = async (acceptedFiles) => {
+    setFiles(
+      acceptedFiles.map((file) => ({
+        name: file.name,
+        preview: "",
+        loading: true,
+      }))
+    );
+    type FileObject = {
+      name: string;
+      preview: string;
+      loading: boolean;
+    };
+    const uploaded_files: Array<FileObject> = await Promise.all(
+      acceptedFiles.map(async (file) => {
+        const fileUrl = await uploadFile(file);
+        return { name: file.name, preview: fileUrl, loading: false };
+      })
+    );
+    setFiles(uploaded_files);
+    onChange(uploaded_files);
+  };
   const { getRootProps, getInputProps } = useDropzone({
     accept: "image/*",
-    multiple: false,
-    onDrop: useCallback(
-      (acceptedFiles) => {
-        setFiles(
-          acceptedFiles.map((file) =>
-            Object.assign(file, {
-              preview: URL.createObjectURL(file),
-            })
-          )
-        );
-        onChange(acceptedFiles);
-      },
-      [onChange]
-    ),
+    multiple: true,
+    onDrop: (acceptedFiles) => handleAcceptedfiles(acceptedFiles),
   });
 
-  const thumbs = files.map((file) => (
-    <Thumb key={file.name}>
-      <div style={thumbInner}>
-        <img src={file.preview} style={img} alt={file.name} />
-      </div>
+  const thumbs = files.map((file, key) => (
+    <Thumb key={key}>
+      {file.loading ? (
+        <Spinner />
+      ) : (
+        <div style={thumbInner}>
+          <img src={file.preview} style={img} alt={file.name} />
+        </div>
+      )}
     </Thumb>
   ));
-
-  useEffect(
-    () => () => {
-      // Make sure to revoke the data uris to avoid memory leaks
-      files.forEach((file) => URL.revokeObjectURL(file.preview));
-    },
-    [files]
-  );
 
   return (
     <section className="container uploader">

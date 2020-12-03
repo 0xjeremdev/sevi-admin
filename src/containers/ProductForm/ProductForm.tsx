@@ -14,8 +14,6 @@ import Checkbox from "components/CheckBox/CheckBox";
 import Select from "components/Select/Select";
 import { FormFields, FormLabel } from "components/FormFields/FormFields";
 import { useWalletState, useWalletDispatch } from "context/WalletContext";
-import Url from "url-parse";
-import axios from "axios";
 import { InLineLoader } from "components/InlineLoader/InlineLoader";
 
 import {
@@ -79,15 +77,7 @@ const CREATE_PRODUCT = gql`
     }
   }
 `;
-const CREATE_PRESIGNED_POST = gql`
-  mutation($type: UploadTypeEnum!, $account: String) {
-    createPreSignedPost(type: $type, account: $account) {
-      data
-      key
-      url
-    }
-  }
-`;
+
 type Props = any;
 
 const AddProduct: React.FC<Props> = (props) => {
@@ -115,21 +105,19 @@ const AddProduct: React.FC<Props> = (props) => {
       type: "NEW_PRODUCT",
       primary: "",
       subCategory: "",
-      picture: "",
     },
   });
   const [type, setType] = useState([{ value: "NEW_PRODUCT" }]);
   const [description, setDescription] = useState("");
+  const [gallery, setGallery] = useState([]);
   const [checkboxs, setCheckBox] = useState({
     barter: false,
     sending: false,
     pickup: false,
     digital: false,
   });
-  const [getURL] = useMutation(CREATE_PRESIGNED_POST);
 
   React.useEffect(() => {
-    register({ name: "picture" });
     register({ name: "type", required: true });
     register({ name: "description", required: true });
   }, [register]);
@@ -142,16 +130,6 @@ const AddProduct: React.FC<Props> = (props) => {
 
   const [createProduct] = useMutation(CREATE_PRODUCT);
 
-  async function startUpload(file: File, presignedUrl: string, key: string) {
-    const send = await axios({
-      method: "PUT",
-      url: presignedUrl,
-      data: file,
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    if (send.status === 200) return "good";
-    else return "bad";
-  }
   const handleTypeChange = ({ value }) => {
     setValue("type", value.length > 0 ? value[0].value : "");
     setType(value);
@@ -163,23 +141,7 @@ const AddProduct: React.FC<Props> = (props) => {
     setValue(e.currentTarget.name, e.currentTarget.checked);
   };
   const handleUploader = async (files) => {
-    const file = files[0];
-    const presignedUrl = await getURL({
-      variables: {
-        type: "PRODUCT",
-        account: currentWallet,
-        imageName: file.name,
-        imageType: file.type,
-      },
-    });
-    const sendNow = await startUpload(
-      file,
-      presignedUrl.data.createPreSignedPost.url,
-      presignedUrl.data.createPreSignedPost.key
-    );
-    if (sendNow !== "good") return;
-    var url = new Url(presignedUrl.data.createPreSignedPost.url);
-    setValue("picture", `${url.origin}${url.pathname}`);
+    setGallery(files.map((file) => ({ url: file.preview })));
   };
   const onSubmit = async (data) => {
     setLoading(true);
@@ -195,10 +157,7 @@ const AddProduct: React.FC<Props> = (props) => {
         digital: checkboxs.digital,
         renting: true,
         credit: true,
-        gallery:
-          data.picture === null || data.picture === ""
-            ? []
-            : [{ url: data.picture }],
+        gallery: gallery,
         primaryCatagory: data.primary,
         type: data.type,
         subCategory: data.subCategory,
