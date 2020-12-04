@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { styled } from "baseui";
 import { UploadIcon } from "assets/icons/UploadIcon";
@@ -7,7 +7,7 @@ import { useWalletState } from "context/WalletContext";
 import Url from "url-parse";
 import axios from "axios";
 import Img_Spinner from "assets/image/spinner.gif";
-import __ReactFlexboxGrid from "react-flexbox-grid";
+// import __ReactFlexboxGrid from "react-flexbox-grid";
 
 const Text = styled("span", ({ $theme }) => ({
   ...$theme.typography.font14,
