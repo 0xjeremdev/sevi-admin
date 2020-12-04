@@ -69,7 +69,7 @@ export default () => {
       qrkey: difficultKey,
     },
   });
-
+  console.log(difficultKey);
   if (error) {
     console.log("error:", error);
   }

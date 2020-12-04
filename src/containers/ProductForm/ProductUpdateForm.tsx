@@ -13,8 +13,6 @@ import { useWalletState, useWalletDispatch } from "context/WalletContext";
 import Checkbox from "components/CheckBox/CheckBox";
 import Select from "components/Select/Select";
 import { FormFields, FormLabel } from "components/FormFields/FormFields";
-import axios from "axios";
-import Url from "url-parse";
 import { InLineLoader } from "components/InlineLoader/InlineLoader";
 
 import {
@@ -79,15 +77,7 @@ const UPDATE_PRODUCT = gql`
     }
   }
 `;
-const CREATE_PRESIGNED_POST = gql`
-  mutation($type: UploadTypeEnum!, $account: String) {
-    createPreSignedPost(type: $type, account: $account) {
-      data
-      key
-      url
-    }
-  }
-`;
+
 type Props = any;
 
 const AddProduct: React.FC<Props> = () => {
@@ -129,9 +119,8 @@ const AddProduct: React.FC<Props> = () => {
     { value: data.category ? data.category.type : "NEW_PRODUCT" },
   ]);
   const [description, setDescription] = useState(data.description);
-  const [getURL] = useMutation(CREATE_PRESIGNED_POST);
+  const [gallery, setGallery] = useState(data.gallery);
   React.useEffect(() => {
-    register({ name: "picture" });
     register({ name: "type", required: true });
     register({ name: "description", required: true });
   }, [register]);
@@ -151,34 +140,9 @@ const AddProduct: React.FC<Props> = () => {
     setValue("type", value.length > 0 ? value[0].value : "");
     setType(value);
   };
-  async function startUpload(file: File, presignedUrl: string, key: string) {
-    const send = await axios({
-      method: "PUT",
-      url: presignedUrl,
-      data: file,
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    if (send.status === 200) return "good";
-    else return "bad";
-  }
+
   const handleUploader = async (files) => {
-    const file = files[0];
-    const presignedUrl = await getURL({
-      variables: {
-        type: "PRODUCT",
-        account: currentWallet,
-        imageName: file.name,
-        imageType: file.type,
-      },
-    });
-    const sendNow = await startUpload(
-      file,
-      presignedUrl.data.createPreSignedPost.url,
-      presignedUrl.data.createPreSignedPost.key
-    );
-    if (sendNow !== "good") return;
-    var url = new Url(presignedUrl.data.createPreSignedPost.url);
-    setValue("picture", `${url.origin}${url.pathname}`);
+    setGallery(files.map((file) => ({ url: file.preview })));
   };
   const [updateProductHandler] = useMutation(UPDATE_PRODUCT);
   const onSubmit = async (updated_data) => {
@@ -197,10 +161,7 @@ const AddProduct: React.FC<Props> = () => {
         digital: checkboxs.digital,
         renting: true,
         credit: true,
-        gallery:
-          new_data.picture === null || new_data.picture === ""
-            ? []
-            : [{ url: new_data.picture }],
+        gallery: gallery,
         primaryCatagory: new_data.primary,
         type: new_data.type,
         subCategory: new_data.subCategory,
@@ -243,12 +204,7 @@ const AddProduct: React.FC<Props> = () => {
               </Col>
               <Col lg={8}>
                 <DrawerBox>
-                  <Uploader
-                    onChange={handleUploader}
-                    imageURL={
-                      data.gallery.length > 0 ? data.gallery[0].url : null
-                    }
-                  />
+                  <Uploader onChange={handleUploader} imageURL={gallery} />
                 </DrawerBox>
               </Col>
             </Row>
