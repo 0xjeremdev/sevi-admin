@@ -12,7 +12,6 @@ import Select from "components/Select/Select";
 import ChevronDown from "baseui/icon/chevron-down";
 import ChevronRight from "baseui/icon/chevron-right";
 import { Button } from "baseui/button";
-// import Input from "components/Input/Input";
 import { useWalletState, useWalletDispatch } from "context/WalletContext";
 import { useQuery, gql } from "@apollo/client";
 import { Wrapper, Header, Heading } from "components/Wrapper.style";
@@ -24,75 +23,83 @@ import {
   StyledTable,
   StyledHeadCell,
   StyledCell,
-} from "./Orders.style";
+} from "./Credit.style";
 import NoResult from "components/NoResult/NoResult";
 
-const GET_ORDERS = gql`
-  query($limit: Int, $status: OrderStatusEnum) {
-    orders(limit: $limit, status: $status) {
-      _id
-      affiliate {
+const GET_CREDITS = gql`
+  query($account: String!) {
+    searchCredit(account: $account) {
+      total
+      hits {
         _id
-        profile {
-          countrycode
-          documentID
-          name
-          phonenumber
-          userPhoto
-        }
-      }
-      delivery {
-        address
-        deliveryType
-        location {
-          lat
-          lon
-        }
-      }
-      deliveryFee
-      groupDetails {
-        name
-        users {
-          _id
-          profile {
-            countrycode
-            documentID
-            name
-            phonenumber
-            userPhoto
-          }
-        }
-      }
-      paymentType
-      phonenumber
-      products {
-        _id
-        category {
-          primary
-          subCategory
-          type
-        }
-        created
-        quantity
-        price
-        description
-      }
-      status
-      notes
-      subTotal
-      userDetails {
-        _id
-        profile {
-          countrycode
-          name
-          documentID
-          phonenumber
-          countrycode
+        status
+        agreedDate
+        typeID
+        type
+        repaymentTerm
+        totalToPay
+        totalPaid
+        amount
+        installments {
+          installmentCount
+          status
+          startDate
+          endDate
+          amount
+          paymentDone
         }
       }
     }
   }
 `;
+
+const dummy_data = [
+  {
+    _id: "5fd0bf9c60e081819ecac2f8",
+    type: "shop order",
+    typeID: "lv6wtap1",
+    amount: 1302,
+    to: {
+      account: "uaaabbb",
+    },
+    from: {
+      method: "seviWallet",
+      name: "Shop order",
+      account: "caaabbb",
+    },
+    status: "agreed",
+    description: "Your Order payment agreements",
+    created:
+      "Mon Nov 30 2020 14:49:54 GMT+0100 (Central European Standard Time)",
+    repaymentDays: 100,
+    repaymentTerm: "weekly",
+    orderID: "5fbbbd082322970dc71ff999",
+    deposit: 260.4,
+    total_amount: 1302,
+    totalToPay: 1042,
+    totalPaid: 261,
+    agreedDate: "2020-11-30T13:50:02.514Z",
+    installments: [
+      {
+        installmentCount: 0,
+        startDate: null,
+        endDate: null,
+        amount: 260.4,
+        status: "pending",
+        paymentDone: null,
+      },
+      {
+        installmentCount: 1,
+        endDate: "2021-01-25T13:50:02.514Z",
+        startDate: "2021-01-18T13:50:02.514Z",
+        status: "pending",
+        paymentDone: null,
+        amount: 130.2,
+      },
+    ],
+    repaymentDueDate: "2021-03-10T13:50:02.514Z",
+  },
+];
 
 type CustomThemeT = { red400: string; textNormal: string; colors: any };
 const themedUseStyletron = createThemedUseStyletron<CustomThemeT>();
@@ -138,16 +145,11 @@ const Row = withStyle(Rows, () => ({
 const statusSelectOptions = [
   { value: "DELIVERED", label: "Delivered", id: "1" },
   { value: "PENDING", label: "Pending", id: "2" },
-  { value: "SHIPPED", label: "Shipped", id: "3" },
+  { value: "COMPLETED", label: "Completed", id: "3" },
   { value: "CANCELLED", label: "Cancelled", id: "4" },
   { value: "REFUNDED", label: "Refunded", id: "5" },
   { value: "RETURNED", label: "Returned", id: "6" },
-  { value: "DISPUTED", label: "Disputed", id: "7" },
-  { value: "AWAITING_KYC", label: "Awaiting KYC", id: "8" },
-  { value: "AWAITING_FULFILLMENT", label: "Awaiting Fullfillment", id: "9" },
-  { value: "AWAITING_SHIPMENT", label: "Awaiting Shipment", id: "10" },
 ];
-
 const limitSelectOptions = [
   { value: 7, label: "Last 7 orders" },
   { value: 15, label: "Last 15 orders" },
@@ -159,21 +161,21 @@ function TableRow(data: any) {
   const [useCss, theme] = themedUseStyletron();
   const [expanded, setExpanded] = React.useState(false);
   const drawerDispatch = useDrawerDispatch();
-  console.log(data);
   const openDrawer = React.useCallback(() => {
+    return;
     drawerDispatch({
       type: "OPEN_DRAWER",
       drawerComponent: "ORDER_UPDATE_FORM",
       data: data.data,
     });
   }, [drawerDispatch, data]);
-  const completed = useCss({
+  const agreed = useCss({
     ":before": {
       content: '""',
       backgroundColor: theme.colors.primary,
     },
   });
-  const cancelled = useCss({
+  const defaulted = useCss({
     ":before": {
       content: '""',
       backgroundColor: theme.colors.red400,
@@ -185,25 +187,25 @@ function TableRow(data: any) {
       backgroundColor: theme.colors.textNormal,
     },
   });
-  const delivered = useCss({
+  const from_agrees = useCss({
     ":before": {
       content: '""',
       backgroundColor: theme.colors.blue400,
     },
   });
-  const returned = useCss({
+  const requested = useCss({
     ":before": {
       content: '""',
       backgroundColor: "rgb(100,0,0,)",
     },
   });
-  const refunded = useCss({
+  const to_agrees = useCss({
     ":before": {
       content: '""',
       backgroundColor: "rgb(100,100,0,)",
     },
   });
-
+  console.log(data);
   return (
     <React.Fragment>
       <div role="row" className={css({ display: "contents" })}>
@@ -218,36 +220,31 @@ function TableRow(data: any) {
           </Button>
         </StyledCell>
         <StyledCell onClick={openDrawer}>{data.data._id}</StyledCell>
+        <StyledCell onClick={openDrawer}>{data.data.type}</StyledCell>
         <StyledCell onClick={openDrawer}>
-          {data.data.userDetails._id}
+          {dayjs(data.data.created).format("DD MMM YYYY")}
         </StyledCell>
         <StyledCell onClick={openDrawer}>
-          {dayjs(data.data.products[0].created).format("DD MMM YYYY")}
+          {dayjs(data.data.agreedDate).format("DD MMM YYYY")}
         </StyledCell>
-        <StyledCell onClick={openDrawer}>
-          {data.data.delivery.address}
-        </StyledCell>
-        <StyledCell onClick={openDrawer}>
-          ${data.data.products[0].price * data.data.products[0].quantity}
-        </StyledCell>
-        <StyledCell onClick={openDrawer}>{data.data.paymentType}</StyledCell>
-        <StyledCell onClick={openDrawer}>{data.data.phonenumber}</StyledCell>
+        <StyledCell onClick={openDrawer}>${data.data.deposit}</StyledCell>
+        <StyledCell onClick={openDrawer}>${data.data.total_amount}</StyledCell>
         <StyledCell style={{ justifyContent: "center" }} onClick={openDrawer}>
           {
             <Status
               className={
-                data.data.status.toLowerCase() === "completed"
-                  ? completed
+                data.data.status.toLowerCase() === "agreed"
+                  ? agreed
+                  : data.data.status.toLowerCase() === "defaulted"
+                  ? defaulted
+                  : data.data.status.toLowerCase() === "from_agree"
+                  ? from_agrees
                   : data.data.status.toLowerCase() === "pending"
                   ? pending
-                  : data.data.status.toLowerCase() === "delivered"
-                  ? delivered
-                  : data.data.status.toLowerCase() === "canceled"
-                  ? cancelled
-                  : data.data.status.toLowerCase() === "refunded"
-                  ? refunded
-                  : data.data.status.toLowerCase() === "returned"
-                  ? returned
+                  : data.data.status.toLowerCase() === "requested"
+                  ? requested
+                  : data.data.status.toLowerCase() === "to_agrees"
+                  ? to_agrees
                   : ""
               }
             >
@@ -258,7 +255,7 @@ function TableRow(data: any) {
         {expanded && (
           <div
             className={css({
-              gridColumn: "span 9",
+              gridColumn: "span 8",
               padding: "32px 24px",
             })}
           >
@@ -266,30 +263,10 @@ function TableRow(data: any) {
               <div role="row" className={css({ display: "contents" })}>
                 <StyledCell>
                   <ReactJson
-                    src={data.data.delivery}
+                    src={data.installments}
                     iconStyle="triangle"
                     collapsed={true}
-                    name="delivery"
-                    enableClipboard={false}
-                    displayDataTypes={false}
-                    displayObjectSize={false}
-                    indentWidth={6}
-                  />
-                  <ReactJson
-                    src={data.data.groupDetails}
-                    iconStyle="triangle"
-                    name="groupDetails"
-                    collapsed={true}
-                    enableClipboard={false}
-                    displayDataTypes={false}
-                    displayObjectSize={false}
-                    indentWidth={6}
-                  />
-                  <ReactJson
-                    src={data.data.userDetails}
-                    iconStyle="triangle"
-                    name="userDetails"
-                    collapsed={true}
+                    name="Installments"
                     enableClipboard={false}
                     displayDataTypes={false}
                     displayObjectSize={false}
@@ -305,83 +282,36 @@ function TableRow(data: any) {
   );
 }
 
-export default function Orders() {
-  // const [checkedId, setCheckedId] = useState([]);
-  // const [checked, setChecked] = useState(false);
+export default function Credit() {
   const [status, setStatus] = useState([]);
   const [limit, setLimit] = useState([]);
-  const orderUpdated = useWalletState("orderUpdated");
-  const wallet_dispatch = useWalletDispatch();
-  const setOrderUpdated = useCallback(
-    (flag) => {
-      wallet_dispatch({
-        type: "ORDER_UPDATED",
-        data: flag,
-      });
-    },
-    [wallet_dispatch]
-  );
-  // const [search, setSearch] = useState([]);
+  const currentWallet = useWalletState("currentWallet");
+  //   const orderUpdated = useWalletState("orderUpdated");
+  //   const wallet_dispatch = useWalletDispatch();
+  //   const setOrderUpdated = useCallback(
+  //     (flag) => {
+  //       wallet_dispatch({
+  //         type: "ORDER_UPDATED",
+  //         data: flag,
+  //       });
+  //     },
+  //     [wallet_dispatch]
+  //   );
 
-  const { data, error, refetch } = useQuery(GET_ORDERS);
+  const { data, error, refetch } = useQuery(GET_CREDITS, {
+    variables: { account: currentWallet },
+  });
   if (error) {
     return <div>Error! {error.message}</div>;
   }
-  if (orderUpdated) {
-    refetch().then(() => {
-      setOrderUpdated(false);
-    });
-  }
+  console.log(data);
   function handleStatus({ value }) {
     setStatus(value);
-    if (value.length) {
-      refetch({
-        status: value[0].value,
-        limit: limit.length ? limit[0].value : null,
-      });
-    } else {
-      refetch({ status: null });
-    }
   }
 
   function handleLimit({ value }) {
     setLimit(value);
-    if (value.length) {
-      refetch({
-        status: status.length ? status[0].value : null,
-        limit: value[0].value,
-      });
-    } else {
-      refetch({
-        limit: null,
-      });
-    }
   }
-
-  // function handleSearch(event) {
-  //   const { value } = event.currentTarget;
-  //   setSearch(value);
-  //   refetch({ searchText: value });
-  // }
-  // function onAllCheck(event) {
-  //   if (event.target.checked) {
-  //     const idx = data && data.orders.map((order) => order._id);
-  //     setCheckedId(idx);
-  //   } else {
-  //     setCheckedId([]);
-  //   }
-  //   setChecked(event.target.checked);
-  // }
-
-  // function handleCheckbox(event) {
-  //   const { name } = event.currentTarget;
-  //   if (!checkedId.includes(name)) {
-  //     setCheckedId((prevState) => [...prevState, name]);
-  //   } else {
-  //     setCheckedId((prevState) => prevState.filter((id) => id !== name));
-  //   }
-  // }
-
   return (
     <Grid fluid={true}>
       <Row>
@@ -393,10 +323,10 @@ export default function Orders() {
             }}
           >
             <Col md={3} xs={12}>
-              <Heading>Orders</Heading>
+              <Heading>Credit</Heading>
             </Col>
 
-            <Col md={9} xs={12}>
+            {/* <Col md={9} xs={12}>
               <Row>
                 <Col md={3} xs={12}>
                   <Select
@@ -421,22 +351,13 @@ export default function Orders() {
                     onChange={handleLimit}
                   />
                 </Col>
-
-                {/* <Col md={6} xs={12}>
-                  <Input
-                    value={search}
-                    placeholder="Ex: Search By Address"
-                    onChange={handleSearch}
-                    clearable
-                  />
-                </Col> */}
               </Row>
-            </Col>
+            </Col> */}
           </Header>
 
           <Wrapper style={{ boxShadow: "0 0 5px rgba(0, 0 , 0, 0.05)" }}>
             <TableWrapper>
-              <StyledTable $gridTemplateColumns="minmax(70px, auto) minmax(150px, 70px) minmax(150px, auto) minmax(150px, auto) minmax(200px, max-content) minmax(150px, auto) minmax(150px, auto) minmax(150px, auto) minmax(150px, auto)">
+              <StyledTable $gridTemplateColumns="minmax(70px, auto) minmax(150px, 70px) minmax(150px, auto) minmax(150px, auto) minmax(200px, max-content) minmax(150px, auto) minmax(150px, auto) minmax(150px, auto)">
                 <StyledHeadCell>
                   <Checkbox
                     name={""}
@@ -458,17 +379,16 @@ export default function Orders() {
                   />
                 </StyledHeadCell>
                 <StyledHeadCell>ID</StyledHeadCell>
-                <StyledHeadCell>Customer ID</StyledHeadCell>
-                <StyledHeadCell>Time</StyledHeadCell>
-                <StyledHeadCell>Delivery Address</StyledHeadCell>
-                <StyledHeadCell>Amount</StyledHeadCell>
-                <StyledHeadCell>Payment Method</StyledHeadCell>
-                <StyledHeadCell>Contact</StyledHeadCell>
+                <StyledHeadCell>Type</StyledHeadCell>
+                <StyledHeadCell>Created Date</StyledHeadCell>
+                <StyledHeadCell>Agreed Date</StyledHeadCell>
+                <StyledHeadCell>Deposit</StyledHeadCell>
+                <StyledHeadCell>Total Amount</StyledHeadCell>
                 <StyledHeadCell>Status</StyledHeadCell>
 
-                {data ? (
-                  data.orders.length ? (
-                    data.orders.map((item, index) => (
+                {dummy_data ? (
+                  dummy_data.length ? (
+                    dummy_data.map((item, index) => (
                       <TableRow data={item} key={index} />
                     ))
                   ) : (

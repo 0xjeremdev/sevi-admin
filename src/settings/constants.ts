@@ -6,6 +6,7 @@ export const CATEGORY = '/category';
 export const LOGIN = '/login';
 export const LOGOUT = '/logout';
 export const ORDERS = '/orders';
+export const CREDIT = '/credit'
 export const CUSTOMERS = '/customers';
 export const COUPONS = '/coupons';
 export const SETTINGS = '/settings';
