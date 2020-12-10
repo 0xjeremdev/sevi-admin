@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React from "react";
 import {
   styled,
   withStyle,
@@ -8,15 +8,15 @@ import {
 import ReactJson from "react-json-view";
 import dayjs from "dayjs";
 import { Grid, Row as Rows, Col as Column } from "components/FlexBox/FlexBox";
-import Select from "components/Select/Select";
+// import Select from "components/Select/Select";
 import ChevronDown from "baseui/icon/chevron-down";
 import ChevronRight from "baseui/icon/chevron-right";
 import { Button } from "baseui/button";
-import { useWalletState, useWalletDispatch } from "context/WalletContext";
+import { useWalletState } from "context/WalletContext";
 import { useQuery, gql } from "@apollo/client";
 import { Wrapper, Header, Heading } from "components/Wrapper.style";
 import Checkbox from "components/CheckBox/CheckBox";
-import { useDrawerDispatch } from "context/DrawerContext";
+// import { useDrawerDispatch } from "context/DrawerContext";
 
 import {
   TableWrapper,
@@ -142,33 +142,33 @@ const Row = withStyle(Rows, () => ({
   },
 }));
 
-const statusSelectOptions = [
-  { value: "DELIVERED", label: "Delivered", id: "1" },
-  { value: "PENDING", label: "Pending", id: "2" },
-  { value: "COMPLETED", label: "Completed", id: "3" },
-  { value: "CANCELLED", label: "Cancelled", id: "4" },
-  { value: "REFUNDED", label: "Refunded", id: "5" },
-  { value: "RETURNED", label: "Returned", id: "6" },
-];
-const limitSelectOptions = [
-  { value: 7, label: "Last 7 orders" },
-  { value: 15, label: "Last 15 orders" },
-  { value: 30, label: "Last 30 orders" },
-];
+// const statusSelectOptions = [
+//   { value: "DELIVERED", label: "Delivered", id: "1" },
+//   { value: "PENDING", label: "Pending", id: "2" },
+//   { value: "COMPLETED", label: "Completed", id: "3" },
+//   { value: "CANCELLED", label: "Cancelled", id: "4" },
+//   { value: "REFUNDED", label: "Refunded", id: "5" },
+//   { value: "RETURNED", label: "Returned", id: "6" },
+// ];
+// const limitSelectOptions = [
+//   { value: 7, label: "Last 7 orders" },
+//   { value: 15, label: "Last 15 orders" },
+//   { value: 30, label: "Last 30 orders" },
+// ];
 
 function TableRow(data: any) {
   const [css] = useStyletron();
   const [useCss, theme] = themedUseStyletron();
   const [expanded, setExpanded] = React.useState(false);
-  const drawerDispatch = useDrawerDispatch();
+  // const drawerDispatch = useDrawerDispatch();
   const openDrawer = React.useCallback(() => {
     return;
-    drawerDispatch({
-      type: "OPEN_DRAWER",
-      drawerComponent: "ORDER_UPDATE_FORM",
-      data: data.data,
-    });
-  }, [drawerDispatch, data]);
+    // drawerDispatch({
+    //   type: "OPEN_DRAWER",
+    //   drawerComponent: "ORDER_UPDATE_FORM",
+    //   data: data.data,
+    // });
+  }, []);
   const agreed = useCss({
     ":before": {
       content: '""',
@@ -205,7 +205,7 @@ function TableRow(data: any) {
       backgroundColor: "rgb(100,100,0,)",
     },
   });
-  console.log(data);
+  // console.log(data);
   return (
     <React.Fragment>
       <div role="row" className={css({ display: "contents" })}>
@@ -283,8 +283,8 @@ function TableRow(data: any) {
 }
 
 export default function Credit() {
-  const [status, setStatus] = useState([]);
-  const [limit, setLimit] = useState([]);
+  // const [status, setStatus] = useState([]);
+  // const [limit, setLimit] = useState([]);
   const currentWallet = useWalletState("currentWallet");
   //   const orderUpdated = useWalletState("orderUpdated");
   //   const wallet_dispatch = useWalletDispatch();
@@ -298,20 +298,21 @@ export default function Credit() {
   //     [wallet_dispatch]
   //   );
 
-  const { data, error, refetch } = useQuery(GET_CREDITS, {
+  const { data, error } = useQuery(GET_CREDITS, {
     variables: { account: currentWallet },
   });
   if (error) {
     return <div>Error! {error.message}</div>;
   }
   console.log(data);
-  function handleStatus({ value }) {
-    setStatus(value);
-  }
+  // console.log(data);
+  // function handleStatus({ value }) {
+  //   setStatus(value);
+  // }
 
-  function handleLimit({ value }) {
-    setLimit(value);
-  }
+  // function handleLimit({ value }) {
+  //   setLimit(value);
+  // }
   return (
     <Grid fluid={true}>
       <Row>

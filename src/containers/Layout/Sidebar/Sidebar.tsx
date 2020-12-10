@@ -13,18 +13,18 @@ import {
   // CATEGORY,
   ORDERS,
   CREDIT,
-  CUSTOMERS,
-  COUPONS,
+  // CUSTOMERS,
+  // COUPONS,
   SETTINGS,
 } from "settings/constants";
 import { AuthContext } from "context/auth";
 
 import { DashboardIcon } from "assets/icons/DashboardIcon";
 import { ProductIcon } from "assets/icons/ProductIcon";
-import { SidebarCategoryIcon } from "assets/icons/SidebarCategoryIcon";
+// import { SidebarCategoryIcon } from "assets/icons/SidebarCategoryIcon";
 import { OrderIcon } from "assets/icons/OrderIcon";
-import { CustomerIcon } from "assets/icons/CustomerIcon";
-import { CouponIcon } from "assets/icons/CouponIcon";
+// import { CustomerIcon } from "assets/icons/CustomerIcon";
+// import { CouponIcon } from "assets/icons/CouponIcon";
 import { SettingIcon } from "assets/icons/SettingIcon";
 import { LogoutIcon } from "assets/icons/LogoutIcon";
 
