@@ -140,11 +140,16 @@ const Row = withStyle(Rows, () => ({
 const statusSelectOptions = [
   { value: "DELIVERED", label: "Delivered", id: "1" },
   { value: "PENDING", label: "Pending", id: "2" },
-  { value: "COMPLETED", label: "Completed", id: "3" },
+  { value: "SHIPPED", label: "Shipped", id: "3" },
   { value: "CANCELLED", label: "Cancelled", id: "4" },
   { value: "REFUNDED", label: "Refunded", id: "5" },
   { value: "RETURNED", label: "Returned", id: "6" },
+  { value: "DISPUTED", label: "Disputed", id: "7" },
+  { value: "AWAITING_KYC", label: "Awaiting KYC", id: "8" },
+  { value: "AWAITING_FULFILLMENT", label: "Awaiting Fullfillment", id: "9" },
+  { value: "AWAITING_SHIPMENT", label: "Awaiting Shipment", id: "10" },
 ];
+
 const limitSelectOptions = [
   { value: 7, label: "Last 7 orders" },
   { value: 15, label: "Last 15 orders" },
@@ -156,6 +161,7 @@ function TableRow(data: any) {
   // const [useCss, theme] = themedUseStyletron();
   const [expanded, setExpanded] = React.useState(false);
   const drawerDispatch = useDrawerDispatch();
+  console.log(data);
   const openDrawer = React.useCallback(() => {
     drawerDispatch({
       type: "OPEN_DRAWER",

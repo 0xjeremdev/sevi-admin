@@ -12,18 +12,19 @@ import {
   PRODUCTS,
   // CATEGORY,
   ORDERS,
-  // CUSTOMERS,
-  // COUPONS,
+  CREDIT,
+  CUSTOMERS,
+  COUPONS,
   SETTINGS,
 } from "settings/constants";
 import { AuthContext } from "context/auth";
 
 import { DashboardIcon } from "assets/icons/DashboardIcon";
 import { ProductIcon } from "assets/icons/ProductIcon";
-// import { SidebarCategoryIcon } from "assets/icons/SidebarCategoryIcon";
+import { SidebarCategoryIcon } from "assets/icons/SidebarCategoryIcon";
 import { OrderIcon } from "assets/icons/OrderIcon";
-// import { CustomerIcon } from "assets/icons/CustomerIcon";
-// import { CouponIcon } from "assets/icons/CouponIcon";
+import { CustomerIcon } from "assets/icons/CustomerIcon";
+import { CouponIcon } from "assets/icons/CouponIcon";
 import { SettingIcon } from "assets/icons/SettingIcon";
 import { LogoutIcon } from "assets/icons/LogoutIcon";
 
@@ -60,6 +61,24 @@ const sidebarMenus = [
   // },
   // {
   //   name: 'Coupons',
+  //   path: COUPONS,
+  //   exact: false,
+  //   icon: <CouponIcon />,
+  // },
+  {
+    name: "Credits",
+    path: CREDIT,
+    exact: false,
+    icon: <OrderIcon />,
+  },
+  // {
+  //   name: "Customers",
+  //   path: CUSTOMERS,
+  //   exact: false,
+  //   icon: <CustomerIcon />,
+  // },
+  // {
+  //   name: "Coupons",
   //   path: COUPONS,
   //   exact: false,
   //   icon: <CouponIcon />,

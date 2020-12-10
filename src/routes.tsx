@@ -6,6 +6,7 @@ import {
   CATEGORY,
   DASHBOARD,
   ORDERS,
+  CREDIT,
   SETTINGS,
   CUSTOMERS,
   COUPONS,
@@ -19,6 +20,7 @@ const AdminLayout = lazy(() => import("containers/Layout/Layout"));
 const Dashboard = lazy(() => import("containers/Dashboard/Dashboard"));
 const Category = lazy(() => import("containers/Category/Category"));
 const Orders = lazy(() => import("containers/Orders/Orders"));
+const Credit = lazy(() => import("containers/Credit/Credit"));
 const Settings = lazy(() => import("containers/Settings/Settings"));
 const SiteSettingForm = lazy(
   () => import("containers/SiteSettingForm/SiteSettingForm")
@@ -89,6 +91,13 @@ const Routes = () => {
             <AdminLayout>
               <Suspense fallback={<InLineLoader />}>
                 <Orders />
+              </Suspense>
+            </AdminLayout>
+          </PrivateRoute>
+          <PrivateRoute path={CREDIT}>
+            <AdminLayout>
+              <Suspense fallback={<InLineLoader />}>
+                <Credit />
               </Suspense>
             </AdminLayout>
           </PrivateRoute>
