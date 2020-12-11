@@ -17,7 +17,6 @@ import { split, HttpLink } from "@apollo/client";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { WebSocketLink } from "@apollo/client/link/ws";
 import { SubscriptionClient } from "subscriptions-transport-ws";
-// import { onError } from "@apollo/client/link/error";
 
 const httpLink = new HttpLink({
   uri: process.env.REACT_APP_API_URL,
@@ -47,17 +46,6 @@ const subscription_client = new SubscriptionClient(
   { reconnect: true }
 );
 
-// const linkError = onError(({ graphQLErrors, networkError }) => {
-//   if (graphQLErrors)
-//     graphQLErrors.map(({ message, locations, path }) =>
-//       console.log(
-//         `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
-//       )
-//     );
-
-//   if (networkError) console.log(`[Network error]: ${networkError}`);
-// });
-
 const wsLink = new WebSocketLink(subscription_client);
 
 const splitLink = split(
@@ -73,11 +61,8 @@ const splitLink = split(
 );
 
 const client = new ApolloClient({
-  // uri: process.env.REACT_APP_API_URL,
   link: splitLink,
-  cache: new InMemoryCache({
-    // addTypename: false,
-  }),
+  cache: new InMemoryCache(),
 });
 
 function App() {
