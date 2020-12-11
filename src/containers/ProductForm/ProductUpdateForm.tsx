@@ -95,7 +95,6 @@ const AddProduct: React.FC<Props> = () => {
     },
     [wallet_dispatch]
   );
-  //===================================================
   const closeDrawer = useCallback(() => dispatch({ type: "CLOSE_DRAWER" }), [
     dispatch,
   ]);
@@ -104,9 +103,9 @@ const AddProduct: React.FC<Props> = () => {
       name: data.name,
       price: data.price,
       description: data.description,
-      type: data.category ? data.category.primary : "NEW_PRODUCT",
-      primary: data.category ? data.category.primary : "",
-      subCategory: data.category ? data.subCategory : "",
+      type: data.categories ? data.categories.primary : "NEW_PRODUCT",
+      primary: data.categories ? data.categories.primary : "",
+      subCategory: data.categories ? data.categories.subCategory : "",
     },
   });
   const [checkboxs, setCheckBox] = useState({
@@ -119,7 +118,10 @@ const AddProduct: React.FC<Props> = () => {
     { value: data.category ? data.category.type : "NEW_PRODUCT" },
   ]);
   const [description, setDescription] = useState(data.description);
+
   const [gallery, setGallery] = useState(data.gallery);
+
+  console.log("data:", data);
   React.useEffect(() => {
     register({ name: "type", required: true });
     register({ name: "description", required: true });
@@ -144,29 +146,39 @@ const AddProduct: React.FC<Props> = () => {
   const handleUploader = async (files) => {
     setGallery(files.map((file) => ({ url: file.preview })));
   };
-  const [updateProductHandler] = useMutation(UPDATE_PRODUCT);
+  const [updateProductHandler, { error }] = useMutation(UPDATE_PRODUCT);
+  if (error) {
+    console.log("error:", error);
+  }
+
   const onSubmit = async (updated_data) => {
     const new_data = { ...data, ...updated_data };
     setLoading(true);
-    await updateProductHandler({
-      variables: {
-        account: currentWallet,
-        id: new_data._id,
-        name: new_data.name,
-        description: new_data.description,
-        price: Number(new_data.price),
-        sending: checkboxs.sending,
-        pickup: checkboxs.pickup,
-        barter: checkboxs.barter,
-        digital: checkboxs.digital,
-        renting: true,
-        credit: true,
-        gallery: gallery,
-        primaryCatagory: new_data.primary,
-        type: new_data.type,
-        subCategory: new_data.subCategory,
-      },
-    });
+    const variables = {
+      account: currentWallet,
+      id: new_data._id,
+      name: new_data.name,
+      description: new_data.description,
+      price: Number(new_data.price),
+      sending: checkboxs.sending,
+      pickup: checkboxs.pickup,
+      barter: checkboxs.barter,
+      digital: checkboxs.digital,
+      renting: true,
+      credit: true,
+      gallery,
+      primaryCatagory: new_data.primary,
+      type: new_data.type,
+      subCategory: new_data.subCategory,
+    };
+
+    console.log("variables:", variables);
+    try {
+      const update = await updateProductHandler({ variables });
+      console.log("update:", update);
+    } catch (err) {
+      console.error("err:", err);
+    }
     setLoading(false);
     setProductUpdated(true);
     closeDrawer();

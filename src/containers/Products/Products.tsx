@@ -78,7 +78,7 @@ const SEARCH_PRODUCT = gql`
         gallery {
           url
         }
-        category {
+        categories {
           type
           primary
           subCategory
@@ -89,6 +89,7 @@ const SEARCH_PRODUCT = gql`
     }
   }
 `;
+
 const DELETE_PRODUCT = gql`
   mutation deleteProduct($id: String!) {
     deleteProduct(id: $id) {

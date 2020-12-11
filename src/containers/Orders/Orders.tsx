@@ -68,7 +68,7 @@ const GET_ORDERS = gql`
       phonenumber
       products {
         _id
-        category {
+        categories {
           primary
           subCategory
           type

@@ -13,11 +13,11 @@ import "react-spring-modal/dist/index.css";
 import "overlayscrollbars/css/OverlayScrollbars.css";
 import "components/Scrollbar/scrollbar.css";
 import "./theme/global.css";
-
 import { split, HttpLink } from "@apollo/client";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { WebSocketLink } from "@apollo/client/link/ws";
 import { SubscriptionClient } from "subscriptions-transport-ws";
+// import { onError } from "@apollo/client/link/error";
 
 const httpLink = new HttpLink({
   uri: process.env.REACT_APP_API_URL,
@@ -47,7 +47,19 @@ const subscription_client = new SubscriptionClient(
   { reconnect: true }
 );
 
+// const linkError = onError(({ graphQLErrors, networkError }) => {
+//   if (graphQLErrors)
+//     graphQLErrors.map(({ message, locations, path }) =>
+//       console.log(
+//         `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
+//       )
+//     );
+
+//   if (networkError) console.log(`[Network error]: ${networkError}`);
+// });
+
 const wsLink = new WebSocketLink(subscription_client);
+
 const splitLink = split(
   ({ query }) => {
     const definition = getMainDefinition(query);
@@ -58,13 +70,14 @@ const splitLink = split(
   },
   wsLink,
   authLink.concat(httpLink)
-  // httpLink
 );
 
 const client = new ApolloClient({
   // uri: process.env.REACT_APP_API_URL,
   link: splitLink,
-  cache: new InMemoryCache(),
+  cache: new InMemoryCache({
+    // addTypename: false,
+  }),
 });
 
 function App() {
