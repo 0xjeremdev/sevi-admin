@@ -103,7 +103,7 @@ const AddProduct: React.FC<Props> = () => {
       name: data.name,
       price: data.price,
       description: data.description,
-      type: data.categories ? data.categories.primary : "NEW_PRODUCT",
+      type: data.categories ? data.categories.type : "NEW_PRODUCT",
       primary: data.categories ? data.categories.primary : "",
       subCategory: data.categories ? data.categories.subCategory : "",
     },
@@ -115,18 +115,19 @@ const AddProduct: React.FC<Props> = () => {
     digital: data.exchange.digital,
   });
   const [type, setType] = useState([
-    { value: data.category ? data.category.type : "NEW_PRODUCT" },
+    { value: data.categories ? data.categories.type : "NEW_PRODUCT" },
   ]);
   const [description, setDescription] = useState(data.description);
 
-  const [gallery, setGallery] = useState(data.gallery);
+  const [gallery, setGallery] = useState(
+    data.gallery.map((item) => ({ url: item.url }))
+  );
 
   console.log("data:", data);
   React.useEffect(() => {
     register({ name: "type", required: true });
     register({ name: "description", required: true });
   }, [register]);
-
   const handleDescriptionChange = (e) => {
     const value = e.target.value;
     setValue("description", value);
